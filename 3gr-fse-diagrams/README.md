@@ -1,11 +1,18 @@
 # 3GR-FSE Engine Diagrams (2006 GS300 GRS190)
 
-Open these PNG files directly from this folder in your file explorer or IDE:
+**Ireland / UK RHD:** use the RHD-specific files below. Engine parts are identical to LHD;
+only driver/passenger labels in the engine bay are mirrored.
 
-## Main engine diagrams
+Open these PNG files directly from this folder in your file explorer or IDE.
+
+## RHD Ireland (correct for your car)
+- `3gr-fse-exploded-rhd.png` — **Exploded view**, all major assemblies labeled
+- `3gr-fse-top-view-RHD-ireland.png` — Top view: Bank 1 = driver side (right of bay)
+
+## Main engine diagrams (LHD labels — use RHD files above instead)
 - `3gr-fse-external-overview.png` — Front/side view, all major external parts labeled
 - `3gr-fse-cutaway-head.png` — Cutaway: cams, valves, injector, piston
-- `3gr-fse-top-view-layout.png` — Top view: cylinders, ports, leak locations
+- `3gr-fse-top-view-layout.png` — Top view (LHD passenger/driver labels)
 
 ## Valve cleaning
 - `gs300-cylinder-layout.png` — Cylinder numbering (#1–#6)
