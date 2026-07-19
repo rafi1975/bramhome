@@ -9,6 +9,11 @@ Open these PNG files directly from this folder in your file explorer or IDE.
 - `3gr-fse-exploded-rhd.png` — **Exploded view**, all major assemblies labeled
 - `3gr-fse-top-view-RHD-ireland.png` — Top view: Bank 1 = driver side (right of bay)
 
+## Corrected intake ports (match real 3GR-FSE photo)
+- `3gr-fse-intake-ports-correct.png` — Full valley: twin oval ports per cylinder
+- `3gr-fse-one-cylinder-ports.png` — Close-up: one cylinder = two ovals + bridge
+- `3gr-fse-exploded-ports-correct.png` — Exploded view with correct ports
+
 ## Main engine diagrams (LHD labels — use RHD files above instead)
 - `3gr-fse-external-overview.png` — Front/side view, all major external parts labeled
 - `3gr-fse-cutaway-head.png` — Cutaway: cams, valves, injector, piston
