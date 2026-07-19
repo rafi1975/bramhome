@@ -1,31 +1,38 @@
-# 3GR-FSE Engine Diagrams (2006 GS300 GRS190)
+# 3GR-FSE Engine Diagrams (2006 GS300 GRS190 — Ireland RHD)
 
-**Ireland / UK RHD:** use the RHD-specific files below. Engine parts are identical to LHD;
-only driver/passenger labels in the engine bay are mirrored.
+**Only these files are current.** Older incorrect diagrams were removed.
 
-Open these PNG files directly from this folder in your file explorer or IDE.
+## Use these
 
-## RHD Ireland (correct for your car)
-- `3gr-fse-exploded-rhd.png` — **Exploded view**, all major assemblies labeled
-- `3gr-fse-top-view-RHD-ireland.png` — Top view: Bank 1 = driver side (right of bay)
+| File | What it shows |
+|------|----------------|
+| `3gr-fse-intake-ports-correct.png` | Full intake valley — twin oval ports per cylinder |
+| `3gr-fse-one-cylinder-ports.png` | Close-up: one cylinder = two ovals + bridge |
+| `3gr-fse-exploded-ports-correct.png` | Exploded view with correct ports |
+| `valve-closed-vs-open.png` | Camera looking **down** into ports — CLOSED vs OPEN |
+| `crank-rotation-clockwise.png` | Turn crank **clockwise** only (from front of car) |
 
-## Corrected intake ports (match real 3GR-FSE photo)
-- `3gr-fse-intake-ports-correct.png` — Full valley: twin oval ports per cylinder
-- `3gr-fse-one-cylinder-ports.png` — Close-up: one cylinder = two ovals + bridge
-- `3gr-fse-exploded-ports-correct.png` — Exploded view with correct ports
+## RHD reminder (Ireland)
 
-## Main engine diagrams (LHD labels — use RHD files above instead)
-- `3gr-fse-external-overview.png` — Front/side view, all major external parts labeled
-- `3gr-fse-cutaway-head.png` — Cutaway: cams, valves, injector, piston
-- `3gr-fse-top-view-layout.png` — Top view (LHD passenger/driver labels)
+Standing at the front of the car looking into the bay:
 
-## Valve cleaning
-- `gs300-cylinder-layout.png` — Cylinder numbering (#1–#6)
-- `valve-closed-vs-open.png` — When safe to clean (CLOSED vs OPEN)
-- `crank-rotation-tdc.png` — Turn crank clockwise, 22mm socket
-- `cam-lobe-closed-open.png` — Cam base circle = valves closed
+- **Right side of bay** = driver side = **Bank 1** (cylinders 1, 3, 5)
+- **Left side of bay** = passenger side = **Bank 2** (cylinders 2, 4, 6)
 
-## Reference photos
-- `reference-carbon-in-port.png` — Carbon in intake port
-- `reference-before-after.png` — Before/after cleaning
-- `reference-taped-ports.png` — Taping ports while working
+## After pulling
+
+```bash
+git fetch origin
+git checkout cursor/3gr-fse-diagrams-756c
+git pull
+cd 3gr-fse-diagrams
+ls
+open .
+```
+
+If you still see old files, delete the local folder and re-checkout:
+
+```bash
+rm -rf 3gr-fse-diagrams
+git checkout -- 3gr-fse-diagrams
+```
