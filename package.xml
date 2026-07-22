@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<package format="1" xmlns="https://wiki.freecad.org/Package_Metadata">
+  <name>BramHome</name>
+  <description>Parametric home layout, furniture, and car parts with dimension-driven GUI task panels.</description>
+  <version>0.1.0</version>
+  <date>2026-07-22</date>
+  <maintainer email="bramhome@local">BramHome</maintainer>
+  <license>LGPL-2.1-or-later</license>
+  <icon>Mod/BramHome/Resources/icons/bramhome.svg</icon>
+
+  <content>
+    <workbench>
+      <name>BramHome</name>
+      <classname>BramHomeWorkbench</classname>
+      <subdirectory>Mod/BramHome</subdirectory>
+      <icon>Resources/icons/bramhome.svg</icon>
+      <tag>home</tag>
+      <tag>furniture</tag>
+      <tag>automotive</tag>
+      <tag>parametric</tag>
+    </workbench>
+  </content>
+</package>
