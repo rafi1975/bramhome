@@ -2,7 +2,11 @@
 
 **Only these files are current.** Older incorrect diagrams were removed.
 
-## Use these
+## Start here
+
+- **`GS300-VALVE-CLEANING-CHECKLIST.md`** — full step-by-step for Holts spray + crank turning (RHD Ireland)
+
+## Diagrams
 
 | File | What it shows |
 |------|----------------|
