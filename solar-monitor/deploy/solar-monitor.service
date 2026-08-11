@@ -1,0 +1,19 @@
+[Unit]
+Description=Samil SolarRiver 4400TL monitor
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/solar-monitor
+ExecStart=/home/pi/solar-monitor/.venv/bin/python /home/pi/solar-monitor/monitor.py -c /home/pi/solar-monitor/config.yaml
+Restart=on-failure
+RestartSec=15
+Environment=PYTHONUNBUFFERED=1
+
+# Serial adapter access — add user to dialout, or uncomment:
+# SupplementaryGroups=dialout
+
+[Install]
+WantedBy=multi-user.target
