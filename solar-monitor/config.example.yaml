@@ -1,0 +1,52 @@
+# Copy to config.yaml and edit for your setup.
+
+serial:
+  # USB-RS485 adapters usually appear as /dev/ttyUSB0
+  # Isolated adapters are strongly recommended near inverters.
+  port: /dev/ttyUSB0
+  baud: 9600
+  timeout_s: 2.0
+
+poll:
+  # How often to query the inverter (seconds). 30–300 is typical.
+  interval_s: 60
+  # Retry registration if the inverter does not answer.
+  discovery_retries: 3
+
+storage:
+  sqlite_path: /var/lib/solar-monitor/readings.db
+
+mqtt:
+  enabled: false
+  host: 192.168.1.10
+  port: 1883
+  username: ""
+  password: ""
+  topic_prefix: home/solar/solarriver
+  # Home Assistant MQTT discovery
+  ha_discovery: true
+  device_name: SolarRiver 4400TL
+
+pvoutput:
+  enabled: false
+  api_key: "YOUR_API_KEY"
+  system_id: "YOUR_SYSTEM_ID"
+  # PVOutput minimum interval is 5 minutes
+  min_interval_s: 300
+
+# Optional: combine inverter AC output with a grid import/export meter
+# to know when solar is covering house load vs drawing from the grid.
+#
+# The SolarRiver 4400TL is grid-tied. It does NOT disconnect your house
+# from the grid. It injects solar power in parallel. To know whether you
+# are importing or exporting, you need a second meter on the grid feed
+# (Shelly EM, SDM120 Modbus, IoTaWatt, etc.) publishing watts here.
+grid_meter:
+  enabled: false
+  # Positive = importing from grid, negative = exporting to grid
+  # (or flip with invert: true if your meter uses the opposite sign).
+  mqtt_topic: home/energy/grid/power
+  invert: false
+  # When solar_watts >= house_load_watts we treat the house as
+  # "covered by solar" (any surplus is exported).
+  covered_hysteresis_w: 50
