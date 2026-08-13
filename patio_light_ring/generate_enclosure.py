@@ -4,17 +4,11 @@ Patio mounting enclosure for a stepped LED spotlight.
 
 Measured dimensions (calipers with the user):
   bezel OD 79.0 × 2.5 mm thick
-  upper body Ø72.3 × 15.3 mm
-  lower body Ø59.3 × 53.3 mm
-  pavement hole Ø82 mm, cover lip 13 mm each side → flange Ø108 mm
+  upper body Ø72.3 × 15.3 mm (sets bore clearance)
+  pavement hole Ø82 mm, cover lip 13 mm → flange Ø108 mm
+  sleeve depth 30 mm (sandstone slab — not full light length)
 
-The light drops in from above:
-  - cover flange hides the uneven sandstone hole
-  - top counterbore seats the metal bezel flush with the flange
-  - outer flange edge chamfered (~2 mm) to reduce trip hazard
-  - straight sleeve bore sized for the widest body section (FDM-printable
-    with flange on the bed — no internal 90° step overhang)
-  - open bottom for cable + drainage (no side notch)
+Print: flange on the bed, enable supports for the bezel recess ledge.
 """
 
 from __future__ import annotations
@@ -33,10 +27,7 @@ from trimesh.creation import cylinder, revolve
 # ---------------------------------------------------------------------------
 LIGHT_BEZEL_OD = 79.0
 LIGHT_BEZEL_THICKNESS = 2.5
-LIGHT_UPPER_OD = 72.3
-LIGHT_UPPER_LENGTH = 15.3
-LIGHT_LOWER_OD = 59.3
-LIGHT_LOWER_LENGTH = 53.3
+LIGHT_UPPER_OD = 72.3  # widest body section — sets sleeve bore
 
 # ---------------------------------------------------------------------------
 # Patio hole / cover — MEASURED intent (mm)
@@ -45,16 +36,16 @@ PAVEMENT_HOLE_ID = 82.0
 COVER_LIP = 13.0  # radial overhang beyond the hole
 COVER_FLANGE_OD = PAVEMENT_HOLE_ID + 2.0 * COVER_LIP  # 108
 SLEEVE_OD = 81.0  # fits Ø82 hole with ~1 mm total play
+SLEEVE_LENGTH = 30.0  # into sandstone slab only
 
 # ---------------------------------------------------------------------------
 # Fit clearances
 # ---------------------------------------------------------------------------
-RADIAL_CLEARANCE = 0.8  # per side around body sections
+RADIAL_CLEARANCE = 0.8  # per side around body
 BEZEL_SEAT_CLEARANCE = 0.5  # per side around metal bezel in recess
 SEAT_DEPTH_EXTRA = 0.3  # bezel sits slightly recessed / flush-safe
 COVER_FLANGE_THICKNESS = 3.0  # must be >= seat depth
 EDGE_CHAMFER = 2.0  # anti-trip bevel on outer top edge of cover flange
-BOTTOM_EXTRA = 5.0  # cable slack below light
 SEGMENTS = 160
 
 
@@ -76,7 +67,6 @@ def _cover_flange(
     z_top = z_under + thickness
     ch = min(chamfer, thickness - 0.2) if chamfer > 0.05 else 0.0
     if ch > 0.05:
-        # (radius, height); clockwise winding → positive revolved volume
         profile = np.array(
             [
                 [0.0, z_under],
@@ -109,22 +99,16 @@ def derived_dims(
     light_bezel_od: float = LIGHT_BEZEL_OD,
     light_bezel_thickness: float = LIGHT_BEZEL_THICKNESS,
     light_upper_od: float = LIGHT_UPPER_OD,
-    light_upper_length: float = LIGHT_UPPER_LENGTH,
-    light_lower_od: float = LIGHT_LOWER_OD,
-    light_lower_length: float = LIGHT_LOWER_LENGTH,
     radial_clearance: float = RADIAL_CLEARANCE,
     bezel_seat_clearance: float = BEZEL_SEAT_CLEARANCE,
     seat_depth_extra: float = SEAT_DEPTH_EXTRA,
     cover_flange_od: float = COVER_FLANGE_OD,
     cover_flange_thickness: float = COVER_FLANGE_THICKNESS,
     sleeve_od: float = SLEEVE_OD,
-    bottom_extra: float = BOTTOM_EXTRA,
+    sleeve_length: float = SLEEVE_LENGTH,
     edge_chamfer: float = EDGE_CHAMFER,
 ) -> dict[str, float]:
     seat_id = light_bezel_od + 2.0 * bezel_seat_clearance
-    # One straight bore for the whole sleeve, sized to the widest body
-    # section. A stepped bore prints a flat internal overhang when the
-    # flange is on the bed and causes spaghetti inside the tube.
     cavity_id = light_upper_od + 2.0 * radial_clearance
     seat_depth = light_bezel_thickness + seat_depth_extra
     if cover_flange_thickness + 1e-9 < seat_depth:
@@ -139,26 +123,24 @@ def derived_dims(
         )
     if seat_id <= cavity_id + 0.8:
         raise ValueError("bezel seat must be wider than cavity to form a ledge")
-    # Keep chamfer clear of the bezel recess
     lip_to_seat = (cover_flange_od - seat_id) / 2.0
     if edge_chamfer > lip_to_seat - 2.0:
         raise ValueError("edge_chamfer too large for the cover lip / bezel seat")
-    body_length = light_upper_length + light_lower_length
-    total_h = seat_depth + body_length + bottom_extra
+    # Sleeve length is below the flange underside; seat lives in the flange.
+    total_h = cover_flange_thickness + sleeve_length
     wall = (sleeve_od - cavity_id) / 2.0
     return {
         "cover_flange_od": cover_flange_od,
         "cover_flange_thickness": cover_flange_thickness,
         "edge_chamfer": edge_chamfer,
         "sleeve_od": sleeve_od,
+        "sleeve_length": sleeve_length,
         "seat_id": seat_id,
         "seat_depth": seat_depth,
         "cavity_id": cavity_id,
         "wall_thickness": wall,
         "total_height": total_h,
         "ledge_width": (seat_id - cavity_id) / 2.0,
-        "bottom_extra": bottom_extra,
-        "body_length": body_length,
     }
 
 
@@ -166,47 +148,42 @@ def build_enclosure(
     light_bezel_od: float = LIGHT_BEZEL_OD,
     light_bezel_thickness: float = LIGHT_BEZEL_THICKNESS,
     light_upper_od: float = LIGHT_UPPER_OD,
-    light_upper_length: float = LIGHT_UPPER_LENGTH,
-    light_lower_od: float = LIGHT_LOWER_OD,
-    light_lower_length: float = LIGHT_LOWER_LENGTH,
     radial_clearance: float = RADIAL_CLEARANCE,
     bezel_seat_clearance: float = BEZEL_SEAT_CLEARANCE,
     seat_depth_extra: float = SEAT_DEPTH_EXTRA,
     cover_flange_od: float = COVER_FLANGE_OD,
     cover_flange_thickness: float = COVER_FLANGE_THICKNESS,
     sleeve_od: float = SLEEVE_OD,
-    bottom_extra: float = BOTTOM_EXTRA,
+    sleeve_length: float = SLEEVE_LENGTH,
     edge_chamfer: float = EDGE_CHAMFER,
     segments: int = SEGMENTS,
 ) -> trimesh.Trimesh:
     """
-    Watertight enclosure mesh, oriented for printing:
-      z=0  → cover flange on the build plate (bezel recess toward the bed)
-      +z   → sleeve pointing up
+    Watertight enclosure in normal (installed) orientation:
+      z=0  → open sleeve bottom
+      +z   → cover flange on top (bezel recess on the top face)
 
-    Flush bezel counterbore + outer anti-trip chamfer are included.
+    Slice with the flange on the build plate and supports enabled for the
+    bezel recess ledge.
     """
     d = derived_dims(
         light_bezel_od=light_bezel_od,
         light_bezel_thickness=light_bezel_thickness,
         light_upper_od=light_upper_od,
-        light_upper_length=light_upper_length,
-        light_lower_od=light_lower_od,
-        light_lower_length=light_lower_length,
         radial_clearance=radial_clearance,
         bezel_seat_clearance=bezel_seat_clearance,
         seat_depth_extra=seat_depth_extra,
         cover_flange_od=cover_flange_od,
         cover_flange_thickness=cover_flange_thickness,
         sleeve_od=sleeve_od,
-        bottom_extra=bottom_extra,
+        sleeve_length=sleeve_length,
         edge_chamfer=edge_chamfer,
     )
 
     H = d["total_height"]
     seat_depth = d["seat_depth"]
     z_ledge = H - seat_depth
-    z_flange_under = H - cover_flange_thickness
+    z_flange_under = H - cover_flange_thickness  # == sleeve_length
 
     flange = _cover_flange(
         cover_flange_od,
@@ -218,9 +195,7 @@ def build_enclosure(
     sleeve = _cyl(sleeve_od / 2.0, z_flange_under + 0.1, -0.05, segments)
     solid = flange.union(sleeve, engine="manifold")
 
-    # Flush bezel recess (counterbore from top down to seating ledge)
     seat = _cyl(d["seat_id"] / 2.0, seat_depth + 0.2, z_ledge - 0.05, segments)
-    # Straight sleeve bore — no internal step (printable flange-down)
     cavity = _cyl(d["cavity_id"] / 2.0, z_ledge + 0.2, -0.1, segments)
 
     part = solid.difference(seat, engine="manifold")
@@ -230,11 +205,7 @@ def build_enclosure(
         part.invert()
     part.merge_vertices()
     trimesh.repair.fix_normals(part)
-
-    # Print orientation: flange on the build plate, sleeve pointing up.
-    part.apply_transform(
-        trimesh.transformations.rotation_matrix(np.pi, [1.0, 0.0, 0.0])
-    )
+    # Keep normal orientation (flange on top). Rotate flange-down in the slicer.
     part.apply_translation([0.0, 0.0, -part.bounds[0, 2]])
     return part
 
@@ -260,15 +231,11 @@ def main() -> None:
     p.add_argument("--light-bezel-od", type=float, default=LIGHT_BEZEL_OD)
     p.add_argument("--light-bezel-thickness", type=float, default=LIGHT_BEZEL_THICKNESS)
     p.add_argument("--light-upper-od", type=float, default=LIGHT_UPPER_OD)
-    p.add_argument("--light-upper-length", type=float, default=LIGHT_UPPER_LENGTH)
-    p.add_argument("--light-lower-od", type=float, default=LIGHT_LOWER_OD)
-    p.add_argument("--light-lower-length", type=float, default=LIGHT_LOWER_LENGTH)
     p.add_argument("--cover-flange-od", type=float, default=COVER_FLANGE_OD)
     p.add_argument("--sleeve-od", type=float, default=SLEEVE_OD)
+    p.add_argument("--sleeve-length", type=float, default=SLEEVE_LENGTH)
     p.add_argument("--radial-clearance", type=float, default=RADIAL_CLEARANCE)
-    p.add_argument("--bottom-extra", type=float, default=BOTTOM_EXTRA)
-    p.add_argument("--edge-chamfer", type=float, default=EDGE_CHAMFER,
-                    help="Anti-trip bevel on outer top flange edge (mm)")
+    p.add_argument("--edge-chamfer", type=float, default=EDGE_CHAMFER)
     p.add_argument("--segments", type=int, default=SEGMENTS)
     args = p.parse_args()
 
@@ -276,13 +243,10 @@ def main() -> None:
         light_bezel_od=args.light_bezel_od,
         light_bezel_thickness=args.light_bezel_thickness,
         light_upper_od=args.light_upper_od,
-        light_upper_length=args.light_upper_length,
-        light_lower_od=args.light_lower_od,
-        light_lower_length=args.light_lower_length,
         cover_flange_od=args.cover_flange_od,
         sleeve_od=args.sleeve_od,
+        sleeve_length=args.sleeve_length,
         radial_clearance=args.radial_clearance,
-        bottom_extra=args.bottom_extra,
         edge_chamfer=args.edge_chamfer,
         segments=args.segments,
     )
@@ -297,6 +261,7 @@ def main() -> None:
     print("  enclosure  :")
     for k, v in summary.items():
         print(f"    {k:22s} {v:.2f} mm")
+    print("  Slice: put flange on the bed, enable supports for the bezel recess.")
 
 
 if __name__ == "__main__":

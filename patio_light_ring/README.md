@@ -1,59 +1,56 @@
 # Patio LED mounting enclosure
 
-Drop-in mounting can for the stepped LED spotlight, built from **caliper
-measurements**.
+Drop-in mounting can for the LED spotlight (caliper measurements).
 
-The light drops in from above: the metal bezel seats in a top counterbore so it
-sits **flush** with the cover flange; a **straight sleeve bore** clears the
-widest body section (no internal step — that overhang caused the PLA spaghetti
-failure); the bottom is open for cable and drainage.
+- Flush recess for the metal bezel
+- 2 mm anti-trip chamfer on the cover flange
+- **30 mm sleeve** (sandstone slab depth — not the full light)
+- Straight bore Ø73.9 for the widest body section
 
 ## Measured inputs
 
 | Item | mm |
 |------|---:|
-| Bezel OD | 79.0 |
-| Bezel thickness | 2.5 |
-| Upper body OD × length | 72.3 × 15.3 |
-| Lower body OD × length | 59.3 × 53.3 |
+| Bezel OD × thickness | 79.0 × 2.5 |
+| Upper body OD | 72.3 |
 | Pavement hole | 82.0 |
 | Cover lip (radial) | 13.0 |
+| Sleeve depth | **30.0** |
 
-## Enclosure (derived)
+## Enclosure
 
 | Feature | mm |
 |---------|---:|
-| Cover flange OD | **108.0** |
-| Outer edge chamfer | **2.0** (anti-trip) |
-| Sleeve OD | **81.0** (fits Ø82 hole) |
-| Bezel seat ID | 80.0 |
-| Seat depth (flush recess) | 2.8 |
-| Sleeve bore ID (straight) | 73.9 |
-| Wall thickness | ≈ 3.55 |
-| Total height | 76.4 |
+| Cover flange OD | 108.0 |
+| Edge chamfer | 2.0 |
+| Sleeve OD | 81.0 |
+| Sleeve length | 30.0 |
+| Bezel seat ID × depth | 80.0 × 2.8 |
+| Bore ID | 73.9 |
+| Total height | 33.0 |
+
+## Print on Bambu Lab P1S
+
+1. Import `patio_led_mounting_enclosure.stl`
+2. Put the **wide flange on the build plate** (sleeve up)
+3. **Enable supports** — needed for the bezel recess ledge (that’s what
+   failed as spaghetti without supports)
+   - Support type: normal / snug
+   - Threshold ~30–45°
+   - On build plate only is fine if it still supports the recess; otherwise
+     allow supports everywhere
+4. Optional brim for ASA
+5. PLA for fit check; PETG/ASA for outdoors
 
 ## Files
 
 | File | Description |
 |------|-------------|
-| [`patio_led_mounting_enclosure.stl`](patio_led_mounting_enclosure.stl) | Ready to slice (Bambu Lab P1S) |
+| [`patio_led_mounting_enclosure.stl`](patio_led_mounting_enclosure.stl) | Slice this |
 | [`patio_led_mounting_enclosure.scad`](patio_led_mounting_enclosure.scad) | OpenSCAD source |
-| [`generate_enclosure.py`](generate_enclosure.py) | Parametric generator |
-
-## Bambu Lab P1S
-
-- **Orientation:** import and print **as-is** — flange is already on the
-  bottom of the STL (sleeve up). Do **not** flip it. **No supports.**
-- If auto-orient stands it on the sleeve rim, rotate so the **wide flat
-  flange** is on the plate.
-- **Layer height:** 0.20 mm
-- **Walls:** 3–4 · **Infill:** 25–40%
-- **Material:** PLA for fit check; PETG or ASA outdoors
-- Optional **brim** 5–8 mm (especially for ASA) + glue stick on the plate
-
-## Regenerate
+| [`generate_enclosure.py`](generate_enclosure.py) | Regenerator |
 
 ```bash
 pip install -r requirements.txt
-python generate_enclosure.py -o patio_led_mounting_enclosure.stl
+python generate_enclosure.py --sleeve-length 30 -o patio_led_mounting_enclosure.stl
 ```
