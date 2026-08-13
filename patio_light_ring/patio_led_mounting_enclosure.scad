@@ -23,6 +23,7 @@ radial_clearance = 0.8;
 bezel_seat_clearance = 0.5;
 seat_depth_extra = 0.3;
 cover_flange_thickness = 3.0;
+edge_chamfer = 2.0; // anti-trip bevel on outer top edge
 bottom_extra = 5.0;
 
 $fn = 160;
@@ -56,6 +57,16 @@ module enclosure() {
         // Lower body cavity (open bottom)
         translate([0, 0, -0.1])
             cylinder(h = z_step + 0.2, d = lower_id);
+
+        // Anti-trip chamfer on outer top edge of cover flange
+        if (edge_chamfer > 0.05) {
+            rotate_extrude(convexity = 4)
+                polygon([
+                    [cover_flange_od / 2 + 0.1, total_h + 0.1],
+                    [cover_flange_od / 2 + 0.1, total_h - edge_chamfer],
+                    [cover_flange_od / 2 - edge_chamfer, total_h + 0.1],
+                ]);
+        }
     }
 }
 

@@ -23,6 +23,7 @@ bottom is open for cable and drainage.
 | Feature | mm |
 |---------|---:|
 | Cover flange OD | **108.0** |
+| Outer edge chamfer | **2.0** (anti-trip) |
 | Sleeve OD | **81.0** (fits Ø82 hole) |
 | Bezel seat ID | 80.0 |
 | Seat depth (flush recess) | 2.8 |

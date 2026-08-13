@@ -11,6 +11,7 @@ Measured dimensions (calipers with the user):
 The light drops in from above:
   - cover flange hides the uneven sandstone hole
   - top counterbore seats the metal bezel flush with the flange
+  - outer flange edge chamfered (~2 mm) to reduce trip hazard
   - stepped cavity clears upper / lower body
   - open bottom for cable + drainage (no side notch)
 """
@@ -23,7 +24,7 @@ from pathlib import Path
 import numpy as np
 import trimesh
 from stl import mesh as stl_mesh
-from trimesh.creation import cylinder
+from trimesh.creation import cylinder, revolve
 
 
 # ---------------------------------------------------------------------------
@@ -51,6 +52,7 @@ RADIAL_CLEARANCE = 0.8  # per side around body sections
 BEZEL_SEAT_CLEARANCE = 0.5  # per side around metal bezel in recess
 SEAT_DEPTH_EXTRA = 0.3  # bezel sits slightly recessed / flush-safe
 COVER_FLANGE_THICKNESS = 3.0  # must be >= seat depth
+EDGE_CHAMFER = 2.0  # anti-trip bevel on outer top edge of cover flange
 BOTTOM_EXTRA = 5.0  # cable slack below light
 SEGMENTS = 160
 
@@ -59,6 +61,28 @@ def _cyl(radius: float, height: float, z0: float, sections: int = SEGMENTS) -> t
     m = cylinder(radius=radius, height=height, sections=sections)
     m.apply_translation([0.0, 0.0, z0 + height / 2.0])
     return m
+
+
+def _edge_chamfer_cutter(
+    flange_od: float,
+    chamfer: float,
+    z_top: float,
+    sections: int = SEGMENTS,
+) -> trimesh.Trimesh:
+    """Right-triangle ring that cuts a 45° bevel on the flange outer top edge."""
+    r = flange_od / 2.0
+    eps = 0.08
+    # Closed (x, z) profile in the XZ plane; revolve around Z
+    profile = np.array(
+        [
+            [r + eps, z_top + eps],
+            [r + eps, z_top - chamfer],
+            [r - chamfer, z_top + eps],
+            [r + eps, z_top + eps],
+        ],
+        dtype=np.float64,
+    )
+    return revolve(profile, sections=sections)
 
 
 def derived_dims(
@@ -75,6 +99,7 @@ def derived_dims(
     cover_flange_thickness: float = COVER_FLANGE_THICKNESS,
     sleeve_od: float = SLEEVE_OD,
     bottom_extra: float = BOTTOM_EXTRA,
+    edge_chamfer: float = EDGE_CHAMFER,
 ) -> dict[str, float]:
     seat_id = light_bezel_od + 2.0 * bezel_seat_clearance
     upper_id = light_upper_od + 2.0 * radial_clearance
@@ -84,17 +109,24 @@ def derived_dims(
         raise ValueError(
             f"cover_flange_thickness ({cover_flange_thickness}) must be >= seat_depth ({seat_depth})"
         )
+    if edge_chamfer >= cover_flange_thickness:
+        raise ValueError("edge_chamfer must be smaller than cover flange thickness")
     if upper_id >= sleeve_od - 1.0:
         raise ValueError(
             f"upper cavity ID {upper_id:.2f} leaves too little wall in sleeve OD {sleeve_od:.2f}"
         )
     if seat_id <= upper_id + 0.8:
         raise ValueError("bezel seat must be wider than upper cavity to form a ledge")
+    # Keep chamfer clear of the bezel recess
+    lip_to_seat = (cover_flange_od - seat_id) / 2.0
+    if edge_chamfer > lip_to_seat - 2.0:
+        raise ValueError("edge_chamfer too large for the cover lip / bezel seat")
     total_h = seat_depth + light_upper_length + light_lower_length + bottom_extra
     wall = (sleeve_od - upper_id) / 2.0
     return {
         "cover_flange_od": cover_flange_od,
         "cover_flange_thickness": cover_flange_thickness,
+        "edge_chamfer": edge_chamfer,
         "sleeve_od": sleeve_od,
         "seat_id": seat_id,
         "seat_depth": seat_depth,
@@ -123,13 +155,15 @@ def build_enclosure(
     cover_flange_thickness: float = COVER_FLANGE_THICKNESS,
     sleeve_od: float = SLEEVE_OD,
     bottom_extra: float = BOTTOM_EXTRA,
+    edge_chamfer: float = EDGE_CHAMFER,
     segments: int = SEGMENTS,
 ) -> trimesh.Trimesh:
     """
     Watertight enclosure. Z-up, flange on top, z=0 at open bottom.
 
     Top counterbore depth = seat_depth so the metal bezel sits flush
-    with the cover flange top face.
+    with the cover flange top face. Outer top edge is chamfered to
+    reduce trip hazard when walking over the flange.
     """
     d = derived_dims(
         light_bezel_od=light_bezel_od,
@@ -145,6 +179,7 @@ def build_enclosure(
         cover_flange_thickness=cover_flange_thickness,
         sleeve_od=sleeve_od,
         bottom_extra=bottom_extra,
+        edge_chamfer=edge_chamfer,
     )
 
     H = d["total_height"]
@@ -165,6 +200,10 @@ def build_enclosure(
     part = solid.difference(seat, engine="manifold")
     part = part.difference(upper, engine="manifold")
     part = part.difference(lower, engine="manifold")
+
+    if edge_chamfer > 0.05:
+        chamfer = _edge_chamfer_cutter(cover_flange_od, edge_chamfer, H, sections=segments)
+        part = part.difference(chamfer, engine="manifold")
 
     if part.volume < 0:
         part.invert()
@@ -201,6 +240,8 @@ def main() -> None:
     p.add_argument("--sleeve-od", type=float, default=SLEEVE_OD)
     p.add_argument("--radial-clearance", type=float, default=RADIAL_CLEARANCE)
     p.add_argument("--bottom-extra", type=float, default=BOTTOM_EXTRA)
+    p.add_argument("--edge-chamfer", type=float, default=EDGE_CHAMFER,
+                    help="Anti-trip bevel on outer top flange edge (mm)")
     p.add_argument("--segments", type=int, default=SEGMENTS)
     args = p.parse_args()
 
@@ -215,6 +256,7 @@ def main() -> None:
         sleeve_od=args.sleeve_od,
         radial_clearance=args.radial_clearance,
         bottom_extra=args.bottom_extra,
+        edge_chamfer=args.edge_chamfer,
         segments=args.segments,
     )
     tri = build_enclosure(**kw)
