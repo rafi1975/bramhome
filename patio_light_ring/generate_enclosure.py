@@ -12,7 +12,8 @@ The light drops in from above:
   - cover flange hides the uneven sandstone hole
   - top counterbore seats the metal bezel flush with the flange
   - outer flange edge chamfered (~2 mm) to reduce trip hazard
-  - stepped cavity clears upper / lower body
+  - straight sleeve bore sized for the widest body section (FDM-printable
+    with flange on the bed — no internal 90° step overhang)
   - open bottom for cable + drainage (no side notch)
 """
 
@@ -121,8 +122,10 @@ def derived_dims(
     edge_chamfer: float = EDGE_CHAMFER,
 ) -> dict[str, float]:
     seat_id = light_bezel_od + 2.0 * bezel_seat_clearance
-    upper_id = light_upper_od + 2.0 * radial_clearance
-    lower_id = light_lower_od + 2.0 * radial_clearance
+    # One straight bore for the whole sleeve, sized to the widest body
+    # section. A stepped bore prints a flat internal overhang when the
+    # flange is on the bed and causes spaghetti inside the tube.
+    cavity_id = light_upper_od + 2.0 * radial_clearance
     seat_depth = light_bezel_thickness + seat_depth_extra
     if cover_flange_thickness + 1e-9 < seat_depth:
         raise ValueError(
@@ -130,18 +133,19 @@ def derived_dims(
         )
     if edge_chamfer >= cover_flange_thickness:
         raise ValueError("edge_chamfer must be smaller than cover flange thickness")
-    if upper_id >= sleeve_od - 1.0:
+    if cavity_id >= sleeve_od - 1.0:
         raise ValueError(
-            f"upper cavity ID {upper_id:.2f} leaves too little wall in sleeve OD {sleeve_od:.2f}"
+            f"cavity ID {cavity_id:.2f} leaves too little wall in sleeve OD {sleeve_od:.2f}"
         )
-    if seat_id <= upper_id + 0.8:
-        raise ValueError("bezel seat must be wider than upper cavity to form a ledge")
+    if seat_id <= cavity_id + 0.8:
+        raise ValueError("bezel seat must be wider than cavity to form a ledge")
     # Keep chamfer clear of the bezel recess
     lip_to_seat = (cover_flange_od - seat_id) / 2.0
     if edge_chamfer > lip_to_seat - 2.0:
         raise ValueError("edge_chamfer too large for the cover lip / bezel seat")
-    total_h = seat_depth + light_upper_length + light_lower_length + bottom_extra
-    wall = (sleeve_od - upper_id) / 2.0
+    body_length = light_upper_length + light_lower_length
+    total_h = seat_depth + body_length + bottom_extra
+    wall = (sleeve_od - cavity_id) / 2.0
     return {
         "cover_flange_od": cover_flange_od,
         "cover_flange_thickness": cover_flange_thickness,
@@ -149,14 +153,12 @@ def derived_dims(
         "sleeve_od": sleeve_od,
         "seat_id": seat_id,
         "seat_depth": seat_depth,
-        "upper_cavity_id": upper_id,
-        "lower_cavity_id": lower_id,
+        "cavity_id": cavity_id,
         "wall_thickness": wall,
         "total_height": total_h,
-        "ledge_width": (seat_id - upper_id) / 2.0,
+        "ledge_width": (seat_id - cavity_id) / 2.0,
         "bottom_extra": bottom_extra,
-        "light_upper_length": light_upper_length,
-        "light_lower_length": light_lower_length,
+        "body_length": body_length,
     }
 
 
@@ -204,7 +206,6 @@ def build_enclosure(
     H = d["total_height"]
     seat_depth = d["seat_depth"]
     z_ledge = H - seat_depth
-    z_step = z_ledge - light_upper_length
     z_flange_under = H - cover_flange_thickness
 
     flange = _cover_flange(
@@ -219,21 +220,18 @@ def build_enclosure(
 
     # Flush bezel recess (counterbore from top down to seating ledge)
     seat = _cyl(d["seat_id"] / 2.0, seat_depth + 0.2, z_ledge - 0.05, segments)
-    upper = _cyl(d["upper_cavity_id"] / 2.0, light_upper_length + 0.15, z_step - 0.05, segments)
-    lower = _cyl(d["lower_cavity_id"] / 2.0, z_step + 0.2, -0.1, segments)
+    # Straight sleeve bore — no internal step (printable flange-down)
+    cavity = _cyl(d["cavity_id"] / 2.0, z_ledge + 0.2, -0.1, segments)
 
     part = solid.difference(seat, engine="manifold")
-    part = part.difference(upper, engine="manifold")
-    part = part.difference(lower, engine="manifold")
+    part = part.difference(cavity, engine="manifold")
 
     if part.volume < 0:
         part.invert()
     part.merge_vertices()
     trimesh.repair.fix_normals(part)
 
-    # Print orientation: flip so the cover flange sits on the build plate
-    # (sleeve pointing up). Default STL Z-up had the open sleeve on the
-    # bed, which turns the internal ledges into mid-air overhangs → spaghetti.
+    # Print orientation: flange on the build plate, sleeve pointing up.
     part.apply_transform(
         trimesh.transformations.rotation_matrix(np.pi, [1.0, 0.0, 0.0])
     )

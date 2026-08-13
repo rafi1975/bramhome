@@ -1,11 +1,12 @@
 # Patio LED mounting enclosure
 
 Drop-in mounting can for the stepped LED spotlight, built from **caliper
-measurements** (not photo estimates).
+measurements**.
 
 The light drops in from above: the metal bezel seats in a top counterbore so it
-sits **flush** with the cover flange; the stepped cavity clears the body; the
-bottom is open for cable and drainage.
+sits **flush** with the cover flange; a **straight sleeve bore** clears the
+widest body section (no internal step — that overhang caused the PLA spaghetti
+failure); the bottom is open for cable and drainage.
 
 ## Measured inputs
 
@@ -27,9 +28,8 @@ bottom is open for cable and drainage.
 | Sleeve OD | **81.0** (fits Ø82 hole) |
 | Bezel seat ID | 80.0 |
 | Seat depth (flush recess) | 2.8 |
-| Upper cavity ID | 73.9 |
-| Lower cavity ID | 60.9 |
-| Wall at upper section | ≈ 3.55 |
+| Sleeve bore ID (straight) | 73.9 |
+| Wall thickness | ≈ 3.55 |
 | Total height | 76.4 |
 
 ## Files
@@ -43,13 +43,13 @@ bottom is open for cable and drainage.
 ## Bambu Lab P1S
 
 - **Orientation:** import and print **as-is** — flange is already on the
-  bottom of the STL (sleeve up). Do **not** flip it. No supports.
+  bottom of the STL (sleeve up). Do **not** flip it. **No supports.**
 - If auto-orient stands it on the sleeve rim, rotate so the **wide flat
   flange** is on the plate.
-- **Layer height:** 0.20 mm (0.16 mm for a cleaner flange top)
+- **Layer height:** 0.20 mm
 - **Walls:** 3–4 · **Infill:** 25–40%
 - **Material:** PLA for fit check; PETG or ASA outdoors
-- Optional **brim** 5–8 mm (especially for ASA)
+- Optional **brim** 5–8 mm (especially for ASA) + glue stick on the plate
 
 ## Regenerate
 
