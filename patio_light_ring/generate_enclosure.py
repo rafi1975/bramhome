@@ -2,14 +2,17 @@
 """
 Patio mounting enclosure for a stepped LED spotlight.
 
-The light drops in from above:
-  - cover flange hides an uneven pavement hole
-  - counterbore seats the light bezel flush with the top
-  - stepped cavity clears the light upper / lower body
-  - open bottom + side cable slot for wiring and drainage
+Measured dimensions (calipers with the user):
+  bezel OD 79.0 × 2.5 mm thick
+  upper body Ø72.3 × 15.3 mm
+  lower body Ø59.3 × 53.3 mm
+  pavement hole Ø82 mm, cover lip 13 mm each side → flange Ø108 mm
 
-Default light dimensions are PHOTO ESTIMATES (Lightning cable as
-scale). Remeasure the spotlight and regenerate before final print.
+The light drops in from above:
+  - cover flange hides the uneven sandstone hole
+  - top counterbore seats the metal bezel flush with the flange
+  - stepped cavity clears upper / lower body
+  - open bottom for cable + drainage (no side notch)
 """
 
 from __future__ import annotations
@@ -20,34 +23,36 @@ from pathlib import Path
 import numpy as np
 import trimesh
 from stl import mesh as stl_mesh
-from trimesh.creation import box, cylinder
+from trimesh.creation import cylinder
 
 
 # ---------------------------------------------------------------------------
-# LED spotlight — PHOTO ESTIMATES (mm). Replace with caliper readings.
+# LED spotlight — MEASURED (mm)
 # ---------------------------------------------------------------------------
-LIGHT_FLANGE_OD = 72.0
-LIGHT_FLANGE_THICKNESS = 2.5
-LIGHT_UPPER_OD = 58.0
-LIGHT_UPPER_LENGTH = 18.0
-LIGHT_LOWER_OD = 48.0
-LIGHT_LOWER_LENGTH = 72.0
-LIGHT_CABLE_NOTCH_W = 14.0
-LIGHT_CABLE_NOTCH_H = 16.0
+LIGHT_BEZEL_OD = 79.0
+LIGHT_BEZEL_THICKNESS = 2.5
+LIGHT_UPPER_OD = 72.3
+LIGHT_UPPER_LENGTH = 15.3
+LIGHT_LOWER_OD = 59.3
+LIGHT_LOWER_LENGTH = 53.3
 
 # ---------------------------------------------------------------------------
-# Enclosure fit / pavement cover
+# Patio hole / cover — MEASURED intent (mm)
 # ---------------------------------------------------------------------------
-RADIAL_CLEARANCE = 0.8
-FLANGE_SEAT_CLEARANCE = 0.5
-SEAT_DEPTH_EXTRA = 0.3
-COVER_FLANGE_OD = 110.0
-COVER_FLANGE_THICKNESS = 3.0
-WALL_THICKNESS = 3.0
-BOTTOM_EXTRA = 8.0
-CABLE_SLOT_EXTRA_W = 4.0
-CABLE_SLOT_EXTRA_H = 10.0
-SEGMENTS = 128
+PAVEMENT_HOLE_ID = 82.0
+COVER_LIP = 13.0  # radial overhang beyond the hole
+COVER_FLANGE_OD = PAVEMENT_HOLE_ID + 2.0 * COVER_LIP  # 108
+SLEEVE_OD = 81.0  # fits Ø82 hole with ~1 mm total play
+
+# ---------------------------------------------------------------------------
+# Fit clearances
+# ---------------------------------------------------------------------------
+RADIAL_CLEARANCE = 0.8  # per side around body sections
+BEZEL_SEAT_CLEARANCE = 0.5  # per side around metal bezel in recess
+SEAT_DEPTH_EXTRA = 0.3  # bezel sits slightly recessed / flush-safe
+COVER_FLANGE_THICKNESS = 3.0  # must be >= seat depth
+BOTTOM_EXTRA = 5.0  # cable slack below light
+SEGMENTS = 160
 
 
 def _cyl(radius: float, height: float, z0: float, sections: int = SEGMENTS) -> trimesh.Trimesh:
@@ -57,38 +62,47 @@ def _cyl(radius: float, height: float, z0: float, sections: int = SEGMENTS) -> t
 
 
 def derived_dims(
-    light_flange_od: float = LIGHT_FLANGE_OD,
-    light_flange_thickness: float = LIGHT_FLANGE_THICKNESS,
+    light_bezel_od: float = LIGHT_BEZEL_OD,
+    light_bezel_thickness: float = LIGHT_BEZEL_THICKNESS,
     light_upper_od: float = LIGHT_UPPER_OD,
     light_upper_length: float = LIGHT_UPPER_LENGTH,
     light_lower_od: float = LIGHT_LOWER_OD,
     light_lower_length: float = LIGHT_LOWER_LENGTH,
     radial_clearance: float = RADIAL_CLEARANCE,
-    flange_seat_clearance: float = FLANGE_SEAT_CLEARANCE,
+    bezel_seat_clearance: float = BEZEL_SEAT_CLEARANCE,
     seat_depth_extra: float = SEAT_DEPTH_EXTRA,
     cover_flange_od: float = COVER_FLANGE_OD,
     cover_flange_thickness: float = COVER_FLANGE_THICKNESS,
-    wall_thickness: float = WALL_THICKNESS,
+    sleeve_od: float = SLEEVE_OD,
     bottom_extra: float = BOTTOM_EXTRA,
 ) -> dict[str, float]:
-    seat_id = light_flange_od + 2.0 * flange_seat_clearance
+    seat_id = light_bezel_od + 2.0 * bezel_seat_clearance
     upper_id = light_upper_od + 2.0 * radial_clearance
     lower_id = light_lower_od + 2.0 * radial_clearance
-    seat_depth = light_flange_thickness + seat_depth_extra
-    max_bore = max(seat_id, upper_id)
-    sleeve_od = max_bore + 2.0 * wall_thickness
+    seat_depth = light_bezel_thickness + seat_depth_extra
+    if cover_flange_thickness + 1e-9 < seat_depth:
+        raise ValueError(
+            f"cover_flange_thickness ({cover_flange_thickness}) must be >= seat_depth ({seat_depth})"
+        )
+    if upper_id >= sleeve_od - 1.0:
+        raise ValueError(
+            f"upper cavity ID {upper_id:.2f} leaves too little wall in sleeve OD {sleeve_od:.2f}"
+        )
+    if seat_id <= upper_id + 0.8:
+        raise ValueError("bezel seat must be wider than upper cavity to form a ledge")
     total_h = seat_depth + light_upper_length + light_lower_length + bottom_extra
+    wall = (sleeve_od - upper_id) / 2.0
     return {
-        "seat_id": seat_id,
-        "upper_cavity_id": upper_id,
-        "lower_cavity_id": lower_id,
-        "seat_depth": seat_depth,
-        "sleeve_od": sleeve_od,
         "cover_flange_od": cover_flange_od,
         "cover_flange_thickness": cover_flange_thickness,
+        "sleeve_od": sleeve_od,
+        "seat_id": seat_id,
+        "seat_depth": seat_depth,
+        "upper_cavity_id": upper_id,
+        "lower_cavity_id": lower_id,
+        "wall_thickness": wall,
         "total_height": total_h,
-        "pavement_hole_min": sleeve_od + 1.5,
-        "wall_thickness": wall_thickness,
+        "ledge_width": (seat_id - upper_id) / 2.0,
         "bottom_extra": bottom_extra,
         "light_upper_length": light_upper_length,
         "light_lower_length": light_lower_length,
@@ -96,82 +110,61 @@ def derived_dims(
 
 
 def build_enclosure(
-    light_flange_od: float = LIGHT_FLANGE_OD,
-    light_flange_thickness: float = LIGHT_FLANGE_THICKNESS,
+    light_bezel_od: float = LIGHT_BEZEL_OD,
+    light_bezel_thickness: float = LIGHT_BEZEL_THICKNESS,
     light_upper_od: float = LIGHT_UPPER_OD,
     light_upper_length: float = LIGHT_UPPER_LENGTH,
     light_lower_od: float = LIGHT_LOWER_OD,
     light_lower_length: float = LIGHT_LOWER_LENGTH,
-    light_cable_notch_w: float = LIGHT_CABLE_NOTCH_W,
-    light_cable_notch_h: float = LIGHT_CABLE_NOTCH_H,
     radial_clearance: float = RADIAL_CLEARANCE,
-    flange_seat_clearance: float = FLANGE_SEAT_CLEARANCE,
+    bezel_seat_clearance: float = BEZEL_SEAT_CLEARANCE,
     seat_depth_extra: float = SEAT_DEPTH_EXTRA,
     cover_flange_od: float = COVER_FLANGE_OD,
     cover_flange_thickness: float = COVER_FLANGE_THICKNESS,
-    wall_thickness: float = WALL_THICKNESS,
+    sleeve_od: float = SLEEVE_OD,
     bottom_extra: float = BOTTOM_EXTRA,
     segments: int = SEGMENTS,
 ) -> trimesh.Trimesh:
     """
-    Watertight enclosure mesh. Z-up, flange on top, z=0 at open bottom.
+    Watertight enclosure. Z-up, flange on top, z=0 at open bottom.
 
-    Height map when the light is seated (bezel top flush with enclosure top):
-      H                 enclosure / light bezel top
-      H - seat_depth    seating ledge (light flange underside)
-      ...               upper body cavity
-      ...               lower body cavity
-      0                 open bottom
+    Top counterbore depth = seat_depth so the metal bezel sits flush
+    with the cover flange top face.
     """
     d = derived_dims(
-        light_flange_od=light_flange_od,
-        light_flange_thickness=light_flange_thickness,
+        light_bezel_od=light_bezel_od,
+        light_bezel_thickness=light_bezel_thickness,
         light_upper_od=light_upper_od,
         light_upper_length=light_upper_length,
         light_lower_od=light_lower_od,
         light_lower_length=light_lower_length,
         radial_clearance=radial_clearance,
-        flange_seat_clearance=flange_seat_clearance,
+        bezel_seat_clearance=bezel_seat_clearance,
         seat_depth_extra=seat_depth_extra,
         cover_flange_od=cover_flange_od,
         cover_flange_thickness=cover_flange_thickness,
-        wall_thickness=wall_thickness,
+        sleeve_od=sleeve_od,
         bottom_extra=bottom_extra,
     )
-    if cover_flange_od <= d["sleeve_od"] + 6.0:
-        raise ValueError("cover_flange_od must be larger than sleeve OD by ~6 mm+")
 
     H = d["total_height"]
     seat_depth = d["seat_depth"]
     z_ledge = H - seat_depth
-    z_step = z_ledge - light_upper_length  # upper→lower body transition
+    z_step = z_ledge - light_upper_length
     z_flange_under = H - cover_flange_thickness
 
-    # Outer solid: cover flange + sleeve (overlap for manifold union)
     flange = _cyl(cover_flange_od / 2.0, cover_flange_thickness + 0.05, z_flange_under - 0.025, segments)
-    sleeve = _cyl(d["sleeve_od"] / 2.0, z_flange_under + 0.1, -0.05, segments)
+    sleeve = _cyl(sleeve_od / 2.0, z_flange_under + 0.1, -0.05, segments)
     solid = flange.union(sleeve, engine="manifold")
 
-    # Seat counterbore from top down to ledge
+    # Flush bezel recess (counterbore from top down to seating ledge)
     seat = _cyl(d["seat_id"] / 2.0, seat_depth + 0.2, z_ledge - 0.05, segments)
-
-    # Upper cavity: just below ledge down through upper body (stops at step)
     upper = _cyl(d["upper_cavity_id"] / 2.0, light_upper_length + 0.15, z_step - 0.05, segments)
-
-    # Lower cavity: open bottom through lower body + cable slack
-    lower_h = z_step + 0.2
-    lower = _cyl(d["lower_cavity_id"] / 2.0, lower_h, -0.1, segments)
+    lower = _cyl(d["lower_cavity_id"] / 2.0, z_step + 0.2, -0.1, segments)
 
     part = solid.difference(seat, engine="manifold")
     part = part.difference(upper, engine="manifold")
     part = part.difference(lower, engine="manifold")
-
-    # Cable exit slot through the sleeve wall at the bottom
-    slot_w = light_cable_notch_w + CABLE_SLOT_EXTRA_W
-    slot_h = light_cable_notch_h + CABLE_SLOT_EXTRA_H
-    slot = box(extents=[d["sleeve_od"], slot_w, slot_h + 0.4])
-    slot.apply_translation([d["sleeve_od"] / 2.0, 0.0, slot_h / 2.0 - 0.2])
-    part = part.difference(slot, engine="manifold")
 
     if part.volume < 0:
         part.invert()
@@ -191,33 +184,37 @@ def export_stl(tri: trimesh.Trimesh, path: Path) -> None:
 
 
 def main() -> None:
-    p = argparse.ArgumentParser(description="Generate patio LED mounting enclosure STL")
+    p = argparse.ArgumentParser(description="Generate measured patio LED mounting enclosure STL")
     p.add_argument(
         "-o",
         "--output",
         type=Path,
         default=Path(__file__).resolve().parent / "patio_led_mounting_enclosure.stl",
     )
-    p.add_argument("--light-flange-od", type=float, default=LIGHT_FLANGE_OD)
-    p.add_argument("--light-flange-thickness", type=float, default=LIGHT_FLANGE_THICKNESS)
+    p.add_argument("--light-bezel-od", type=float, default=LIGHT_BEZEL_OD)
+    p.add_argument("--light-bezel-thickness", type=float, default=LIGHT_BEZEL_THICKNESS)
     p.add_argument("--light-upper-od", type=float, default=LIGHT_UPPER_OD)
     p.add_argument("--light-upper-length", type=float, default=LIGHT_UPPER_LENGTH)
     p.add_argument("--light-lower-od", type=float, default=LIGHT_LOWER_OD)
     p.add_argument("--light-lower-length", type=float, default=LIGHT_LOWER_LENGTH)
     p.add_argument("--cover-flange-od", type=float, default=COVER_FLANGE_OD)
+    p.add_argument("--sleeve-od", type=float, default=SLEEVE_OD)
     p.add_argument("--radial-clearance", type=float, default=RADIAL_CLEARANCE)
+    p.add_argument("--bottom-extra", type=float, default=BOTTOM_EXTRA)
     p.add_argument("--segments", type=int, default=SEGMENTS)
     args = p.parse_args()
 
     kw = dict(
-        light_flange_od=args.light_flange_od,
-        light_flange_thickness=args.light_flange_thickness,
+        light_bezel_od=args.light_bezel_od,
+        light_bezel_thickness=args.light_bezel_thickness,
         light_upper_od=args.light_upper_od,
         light_upper_length=args.light_upper_length,
         light_lower_od=args.light_lower_od,
         light_lower_length=args.light_lower_length,
         cover_flange_od=args.cover_flange_od,
+        sleeve_od=args.sleeve_od,
         radial_clearance=args.radial_clearance,
+        bottom_extra=args.bottom_extra,
         segments=args.segments,
     )
     tri = build_enclosure(**kw)
@@ -231,7 +228,6 @@ def main() -> None:
     print("  enclosure  :")
     for k, v in summary.items():
         print(f"    {k:22s} {v:.2f} mm")
-    print("  NOTE: light dimensions are PHOTO ESTIMATES — measure before final print.")
 
 
 if __name__ == "__main__":
