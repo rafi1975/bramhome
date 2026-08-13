@@ -69,20 +69,24 @@ def _edge_chamfer_cutter(
     z_top: float,
     sections: int = SEGMENTS,
 ) -> trimesh.Trimesh:
-    """Right-triangle ring that cuts a 45° bevel on the flange outer top edge."""
+    """Solid ring that cuts a 45° bevel on the flange outer top edge."""
     r = flange_od / 2.0
-    eps = 0.08
-    # Closed (x, z) profile in the XZ plane; revolve around Z
+    eps = 0.25
+    # linestring (radius, height); revolve around Y → Z.
+    # Clockwise winding so the revolved solid has positive volume.
     profile = np.array(
         [
-            [r + eps, z_top + eps],
-            [r + eps, z_top - chamfer],
             [r - chamfer, z_top + eps],
+            [r + eps, z_top - chamfer],
             [r + eps, z_top + eps],
+            [r - chamfer, z_top + eps],
         ],
         dtype=np.float64,
     )
-    return revolve(profile, sections=sections)
+    cutter = revolve(profile, sections=sections)
+    if cutter.volume < 0:
+        cutter.invert()
+    return cutter
 
 
 def derived_dims(
