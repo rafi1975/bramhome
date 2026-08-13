@@ -63,30 +63,45 @@ def _cyl(radius: float, height: float, z0: float, sections: int = SEGMENTS) -> t
     return m
 
 
-def _edge_chamfer_cutter(
+def _cover_flange(
     flange_od: float,
+    thickness: float,
     chamfer: float,
-    z_top: float,
+    z_under: float,
     sections: int = SEGMENTS,
 ) -> trimesh.Trimesh:
-    """Solid ring that cuts a 45° bevel on the flange outer top edge."""
+    """Cover flange disk with optional outer-top anti-trip chamfer baked in."""
     r = flange_od / 2.0
-    eps = 0.25
-    # linestring (radius, height); revolve around Y → Z.
-    # Clockwise winding so the revolved solid has positive volume.
-    profile = np.array(
-        [
-            [r - chamfer, z_top + eps],
-            [r + eps, z_top - chamfer],
-            [r + eps, z_top + eps],
-            [r - chamfer, z_top + eps],
-        ],
-        dtype=np.float64,
-    )
-    cutter = revolve(profile, sections=sections)
-    if cutter.volume < 0:
-        cutter.invert()
-    return cutter
+    z_top = z_under + thickness
+    ch = min(chamfer, thickness - 0.2) if chamfer > 0.05 else 0.0
+    if ch > 0.05:
+        # (radius, height); clockwise winding → positive revolved volume
+        profile = np.array(
+            [
+                [0.0, z_under],
+                [r, z_under],
+                [r, z_top - ch],
+                [r - ch, z_top],
+                [0.0, z_top],
+                [0.0, z_under],
+            ],
+            dtype=np.float64,
+        )
+    else:
+        profile = np.array(
+            [
+                [0.0, z_under],
+                [r, z_under],
+                [r, z_top],
+                [0.0, z_top],
+                [0.0, z_under],
+            ],
+            dtype=np.float64,
+        )
+    flange = revolve(profile, sections=sections)
+    if flange.volume < 0:
+        flange.invert()
+    return flange
 
 
 def derived_dims(
@@ -192,7 +207,13 @@ def build_enclosure(
     z_step = z_ledge - light_upper_length
     z_flange_under = H - cover_flange_thickness
 
-    flange = _cyl(cover_flange_od / 2.0, cover_flange_thickness + 0.05, z_flange_under - 0.025, segments)
+    flange = _cover_flange(
+        cover_flange_od,
+        cover_flange_thickness,
+        edge_chamfer,
+        z_flange_under,
+        sections=segments,
+    )
     sleeve = _cyl(sleeve_od / 2.0, z_flange_under + 0.1, -0.05, segments)
     solid = flange.union(sleeve, engine="manifold")
 
@@ -204,10 +225,6 @@ def build_enclosure(
     part = solid.difference(seat, engine="manifold")
     part = part.difference(upper, engine="manifold")
     part = part.difference(lower, engine="manifold")
-
-    if edge_chamfer > 0.05:
-        chamfer = _edge_chamfer_cutter(cover_flange_od, edge_chamfer, H, sections=segments)
-        part = part.difference(chamfer, engine="manifold")
 
     if part.volume < 0:
         part.invert()
