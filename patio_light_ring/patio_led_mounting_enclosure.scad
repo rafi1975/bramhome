@@ -70,4 +70,6 @@ module enclosure() {
     }
 }
 
-enclosure();
+// Print orientation: flange on the bed (matches STL)
+translate([0, 0, total_h]) rotate([180, 0, 0])
+    enclosure();

@@ -42,10 +42,14 @@ bottom is open for cable and drainage.
 
 ## Bambu Lab P1S
 
-- **Orientation:** cover flange on the bed, sleeve up — no supports
+- **Orientation:** import and print **as-is** — flange is already on the
+  bottom of the STL (sleeve up). Do **not** flip it. No supports.
+- If auto-orient stands it on the sleeve rim, rotate so the **wide flat
+  flange** is on the plate.
 - **Layer height:** 0.20 mm (0.16 mm for a cleaner flange top)
 - **Walls:** 3–4 · **Infill:** 25–40%
-- **Material:** PETG or ASA outdoors (PLA for fit check only)
+- **Material:** PLA for fit check; PETG or ASA outdoors
+- Optional **brim** 5–8 mm (especially for ASA)
 
 ## Regenerate
 

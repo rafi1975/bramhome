@@ -178,11 +178,11 @@ def build_enclosure(
     segments: int = SEGMENTS,
 ) -> trimesh.Trimesh:
     """
-    Watertight enclosure. Z-up, flange on top, z=0 at open bottom.
+    Watertight enclosure mesh, oriented for printing:
+      z=0  → cover flange on the build plate (bezel recess toward the bed)
+      +z   → sleeve pointing up
 
-    Top counterbore depth = seat_depth so the metal bezel sits flush
-    with the cover flange top face. Outer top edge is chamfered to
-    reduce trip hazard when walking over the flange.
+    Flush bezel counterbore + outer anti-trip chamfer are included.
     """
     d = derived_dims(
         light_bezel_od=light_bezel_od,
@@ -230,6 +230,14 @@ def build_enclosure(
         part.invert()
     part.merge_vertices()
     trimesh.repair.fix_normals(part)
+
+    # Print orientation: flip so the cover flange sits on the build plate
+    # (sleeve pointing up). Default STL Z-up had the open sleeve on the
+    # bed, which turns the internal ledges into mid-air overhangs → spaghetti.
+    part.apply_transform(
+        trimesh.transformations.rotation_matrix(np.pi, [1.0, 0.0, 0.0])
+    )
+    part.apply_translation([0.0, 0.0, -part.bounds[0, 2]])
     return part
 
 
