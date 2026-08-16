@@ -47,6 +47,11 @@ SUPPORT_3_LENGTH = 130.0
 SUPPORT_3_DEPTH = 20.0
 SUPPORT_3_HEIGHT = 4.0
 
+# Part 4 — same as part 3, 190 mm long × 5 mm pack
+SUPPORT_4_LENGTH = 190.0
+SUPPORT_4_DEPTH = 20.0
+SUPPORT_4_HEIGHT = 5.0
+
 # 3.5 × 30 mm countersunk wood screws (DIN 7997 / typical SPAX)
 SCREW_SHANK = 3.5
 SCREW_LENGTH = 30.0
@@ -581,6 +586,11 @@ def build_all(
         make_packer_strip(SUPPORT_3_LENGTH, SUPPORT_3_DEPTH, SUPPORT_3_HEIGHT),
         "part 3: 130 × 20 × 4 mm, 3.5×30 CSK recesses",
     )
+    add(
+        "support_190x20x5.stl",
+        make_packer_strip(SUPPORT_4_LENGTH, SUPPORT_4_DEPTH, SUPPORT_4_HEIGHT),
+        "part 4: 190 × 20 × 5 mm, 3.5×30 CSK recesses",
+    )
 
     print("Shims / packers")
     for t in shim_thicknesses:
@@ -623,6 +633,7 @@ def build_all(
             "part_1_mm": [SUPPORT_1_LENGTH, SUPPORT_1_DEPTH, SUPPORT_1_HEIGHT],
             "part_2_mm": [SUPPORT_2_LENGTH, SUPPORT_2_DEPTH, SUPPORT_2_HEIGHT],
             "part_3_mm": [SUPPORT_3_LENGTH, SUPPORT_3_DEPTH, SUPPORT_3_HEIGHT],
+            "part_4_mm": [SUPPORT_4_LENGTH, SUPPORT_4_DEPTH, SUPPORT_4_HEIGHT],
             "screw": "3.5x30 CSK",
             "shank_hole_mm": SCREW_CLEARANCE,
             "head_recess_mm": SCREW_HEAD_OD,

@@ -20,6 +20,11 @@
       130.0,
       20.0,
       4.0
+    ],
+    "part_4_mm": [
+      190.0,
+      20.0,
+      5.0
     ]
   },
   "joist_widths_mm": [
@@ -65,6 +70,18 @@
         4.0
       ],
       "note": "part 3: 130 \u00d7 20 \u00d7 4 mm, 3.5\u00d730 CSK recesses"
+    },
+    {
+      "file": "support_190x20x5.stl",
+      "watertight": true,
+      "triangles": 1806,
+      "volume_mm3": 18518.6,
+      "extents_mm": [
+        190.0,
+        20.0,
+        5.0
+      ],
+      "note": "part 4: 190 \u00d7 20 \u00d7 5 mm, 3.5\u00d730 CSK recesses"
     },
     {
       "file": "shim_1mm.stl",
