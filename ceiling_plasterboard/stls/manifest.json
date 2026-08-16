@@ -15,7 +15,12 @@
     ],
     "screw": "3.5x30 CSK",
     "shank_hole_mm": 4.0,
-    "head_recess_mm": 8.2
+    "head_recess_mm": 8.2,
+    "part_3_mm": [
+      130.0,
+      20.0,
+      4.0
+    ]
   },
   "joist_widths_mm": [
     45.0,
@@ -48,6 +53,18 @@
         4.0
       ],
       "note": "part 2: 190 \u00d7 20 \u00d7 4 mm, 3.5\u00d730 CSK recesses"
+    },
+    {
+      "file": "support_130x20x4.stl",
+      "watertight": true,
+      "triangles": 1424,
+      "volume_mm3": 10075.7,
+      "extents_mm": [
+        130.0,
+        20.0,
+        4.0
+      ],
+      "note": "part 3: 130 \u00d7 20 \u00d7 4 mm, 3.5\u00d730 CSK recesses"
     },
     {
       "file": "shim_1mm.stl",
