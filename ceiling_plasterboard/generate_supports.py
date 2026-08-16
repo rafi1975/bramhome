@@ -24,6 +24,7 @@ import trimesh
 from stl import mesh as stl_mesh
 from trimesh.creation import box as _box
 from trimesh.creation import cylinder as _cylinder
+from trimesh.creation import revolve as _revolve
 
 # ---------------------------------------------------------------------------
 # Known measurements (mm) — edit here or pass CLI flags
@@ -35,6 +36,18 @@ OLD_BOARD = 17.0
 SUPPORT_1_LENGTH = 220.0
 SUPPORT_1_DEPTH = 20.0
 SUPPORT_1_HEIGHT = 8.0
+
+# Part 2 — measured strip (mm)
+SUPPORT_2_LENGTH = 190.0
+SUPPORT_2_DEPTH = 20.0
+SUPPORT_2_HEIGHT = 4.0
+
+# 3.5 × 30 mm countersunk wood screws (DIN 7997 / typical SPAX)
+SCREW_SHANK = 3.5
+SCREW_LENGTH = 30.0
+SCREW_CLEARANCE = 4.0  # through-hole, FDM clearance on a 3.5 mm shank
+SCREW_HEAD_OD = 8.2  # recess — hides ~7 mm CSK head plus print tolerance
+SCREW_SINK_EXTRA = 0.4  # head sits slightly below the strip face
 
 # Common timber joist widths (EU 45 / 60 / 80 / 100, UK/IE dressed 47)
 JOIST_WIDTHS = (45.0, 47.0, 60.0, 80.0, 100.0)
@@ -165,6 +178,46 @@ def drop_to_bed(m: trimesh.Trimesh) -> trimesh.Trimesh:
     return m
 
 
+def screw_cutter(
+    cx: float,
+    cy: float,
+    thick: float,
+    shank: float = SCREW_CLEARANCE,
+    head: float = SCREW_HEAD_OD,
+    extra: float = SCREW_SINK_EXTRA,
+) -> trimesh.Trimesh:
+    """Through-hole + 90° countersink + shallow spotface. Recess is on +Z (top).
+
+    3.5 × 30 CSK: Ø4.0 shank hole, Ø8.2 head recess. Print this face up.
+    """
+    shank_r = shank / 2.0
+    head_r = head / 2.0
+    cone = head_r - shank_r  # 90° included angle: radial drop = axial drop
+    floor = 0.9  # keep a solid washer of plastic under the head
+    extra = min(extra, max(0.2, thick - floor - cone))
+    cone = min(cone, max(0.6, thick - floor - extra))
+    z_top = thick + 0.3
+    z_spot = thick - extra
+    z_cone = z_spot - cone
+    profile = np.array(
+        [
+            [0.0, -0.6],
+            [shank_r, -0.6],
+            [shank_r, z_cone],
+            [head_r, z_spot],
+            [head_r, z_top],
+            [0.0, z_top],
+            [0.0, -0.6],
+        ],
+        dtype=np.float64,
+    )
+    cutter = _revolve(profile, sections=48)
+    if cutter.volume < 0:
+        cutter.invert()
+    cutter.apply_translation([cx, cy, 0.0])
+    return cutter
+
+
 # ---------------------------------------------------------------------------
 # 7-segment thickness label (recessed)
 # ---------------------------------------------------------------------------
@@ -261,12 +314,11 @@ def make_packer_strip(
     length: float = SUPPORT_1_LENGTH,
     width: float = SUPPORT_1_DEPTH,
     thick: float = SUPPORT_1_HEIGHT,
-    hole: float = CLEARANCE_HOLE,
+    hole: float = SCREW_CLEARANCE,
+    countersink: bool = True,
+    label: bool = False,
 ) -> trimesh.Trimesh:
-    """Strip on the joist soffit. Board screws through it into timber.
-
-    Default is the first measured part: 220 × 20 × 8 mm.
-    """
+    """Strip on the joist soffit. 3.5 × 30 screws, heads recessed on the top face."""
     radius = 2.0 if width <= 24.0 else 4.0
     end_inset = 15.0 if length >= 80.0 else max(8.0, length * 0.12)
     plate = rounded_plate(length, width, thick, radius=radius)
@@ -274,9 +326,12 @@ def make_packer_strip(
     pitch = 48.0
     n = max(2, int(round((length - 2.0 * end_inset) / pitch)) + 1)
     xs = np.linspace(end_inset, length - end_inset, n)
-    tools = [cyl(hole / 2.0, thick + 0.8, float(x), y, thick / 2.0) for x in xs]
-    # Recessed thickness digit on a 60 mm window at the start of the strip
-    tools.extend(thickness_label_cutters(thick, min(60.0, length), width, thick))
+    if countersink:
+        tools = [screw_cutter(float(x), y, thick) for x in xs]
+    else:
+        tools = [cyl(hole / 2.0, thick + 0.8, float(x), y, thick / 2.0) for x in xs]
+    if label:
+        tools.extend(thickness_label_cutters(thick, min(60.0, length), width, thick))
     return drop_to_bed(subtract(plate, *tools))
 
 
@@ -509,7 +564,12 @@ def build_all(
     add(
         "support_220x20x8.stl",
         make_packer_strip(SUPPORT_1_LENGTH, SUPPORT_1_DEPTH, SUPPORT_1_HEIGHT),
-        "part 1: 220 × 20 × 8 mm strip (measured)",
+        "part 1: 220 × 20 × 8 mm, 3.5×30 CSK recesses",
+    )
+    add(
+        "support_190x20x4.stl",
+        make_packer_strip(SUPPORT_2_LENGTH, SUPPORT_2_DEPTH, SUPPORT_2_HEIGHT),
+        "part 2: 190 × 20 × 4 mm, 3.5×30 CSK recesses",
     )
 
     print("Shims / packers")
@@ -551,6 +611,10 @@ def build_all(
         "pack_mm": pack,
         "measured": {
             "part_1_mm": [SUPPORT_1_LENGTH, SUPPORT_1_DEPTH, SUPPORT_1_HEIGHT],
+            "part_2_mm": [SUPPORT_2_LENGTH, SUPPORT_2_DEPTH, SUPPORT_2_HEIGHT],
+            "screw": "3.5x30 CSK",
+            "shank_hole_mm": SCREW_CLEARANCE,
+            "head_recess_mm": SCREW_HEAD_OD,
         },
         "joist_widths_mm": list(joist_widths),
         "parts": reports,

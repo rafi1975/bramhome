@@ -7,7 +7,15 @@
       220.0,
       20.0,
       8.0
-    ]
+    ],
+    "part_2_mm": [
+      190.0,
+      20.0,
+      4.0
+    ],
+    "screw": "3.5x30 CSK",
+    "shank_hole_mm": 4.0,
+    "head_recess_mm": 8.2
   },
   "joist_widths_mm": [
     45.0,
@@ -20,14 +28,26 @@
     {
       "file": "support_220x20x8.stl",
       "watertight": true,
-      "triangles": 1334,
-      "volume_mm3": 34431.8,
+      "triangles": 2192,
+      "volume_mm3": 34404.3,
       "extents_mm": [
         220.0,
         20.0,
         8.0
       ],
-      "note": "part 1: 220 \u00d7 20 \u00d7 8 mm strip (measured)"
+      "note": "part 1: 220 \u00d7 20 \u00d7 8 mm, 3.5\u00d730 CSK recesses"
+    },
+    {
+      "file": "support_190x20x4.stl",
+      "watertight": true,
+      "triangles": 1806,
+      "volume_mm3": 14772.2,
+      "extents_mm": [
+        190.0,
+        20.0,
+        4.0
+      ],
+      "note": "part 2: 190 \u00d7 20 \u00d7 4 mm, 3.5\u00d730 CSK recesses"
     },
     {
       "file": "shim_1mm.stl",
@@ -140,8 +160,8 @@
     {
       "file": "packer_strip_4mm.stl",
       "watertight": true,
-      "triangles": 1280,
-      "volume_mm3": 31572.9,
+      "triangles": 2182,
+      "volume_mm3": 31427.1,
       "extents_mm": [
         200.0,
         40.0,

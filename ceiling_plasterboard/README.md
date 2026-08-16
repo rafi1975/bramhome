@@ -6,19 +6,20 @@ Printed parts are **spacers and clips**. Drywall screws must go through the plas
 
 ![4 mm packer, seam biscuit, and shim stack to a laser line](diagrams/pack_and_joint.svg)
 
-## Part 1 (measured) — print this
+## Measured parts — print these
 
-| | mm |
-|--|--:|
-| Length (along joist) | **220** |
-| Depth (across joist) | **20** |
-| Height (pack thickness) | **8** |
+Screws: **3.5 × 30 mm** countersunk. Through-hole Ø4.0, head recess Ø8.2 × 90° so the head sits just below the face. Print **flat, recessed face up**, no supports.
 
-File: [`stls/support_220x20x8.stl`](stls/support_220x20x8.stl)
+| Part | Length | Depth | Height | File |
+|------|-------:|------:|-------:|------|
+| 1 | 220 | 20 | 8 | [`stls/support_220x20x8.stl`](stls/support_220x20x8.stl) |
+| 2 | 190 | 20 | 4 | [`stls/support_190x20x4.stl`](stls/support_190x20x4.stl) |
 
-Single row of Ø4.8 clearance holes on the centreline. Print **flat on the bed**, no supports. PETG preferred; PLA is OK in compression if the screw reaches timber.
+Screw the strip to the beam first; heads hide in the recesses so the plasterboard sits flat. 30 mm into an 8 mm strip leaves ~22 mm in timber; into a 4 mm strip leaves ~26 mm.
 
-Screw length = 13 mm board + 8 mm packer + ≥ 25 mm into timber → use **50 mm** screws.
+If you later drive the same 30 mm screws *through* 13 mm board + 8 mm strip, only ~9 mm reaches timber — too short. Use longer screws for that, or fix the strip first as above.
+
+PETG preferred; PLA is OK in compression if the screw reaches timber.
 
 ## Other parts in the kit
 
@@ -104,14 +105,14 @@ All parts fit the 256 mm cube. No supports on any of them.
 
 | Part | On the bed |
 |------|------------|
-| **Part 1** `support_220x20x8` | Flat 220×20 face down |
+| **Part 1–2** measured strips | Flat face down, **recesses up** |
 | Shims, 4 mm packer strip | Flat face down |
 | Joist saddle | Base down, arms up |
 | Side hanger | Large plate down, flange standing up |
 | Stepped backer | Flat (cavity) face down, step up |
 | Seam biscuit | As exported (60 mm tall H-profile) |
 
-Hole style: clearance Ø4.8 for 3.5–4.2 mm drywall screws; pilots Ø3.2 in biscuits/backers so the screw taps PETG.
+Hole style: measured strips use Ø4.0 through + Ø8.2 CSK for **3.5 × 30**. Other kit parts still use Ø4.8 clearance / Ø3.2 pilots.
 
 ## Screw length
 
@@ -131,10 +132,10 @@ python generate_supports.py --new-board 13 --old-board 17 --joist-width 72
 
 Measured so far:
 
-1. **Part 1 strip** — 220 × 20 × 8 mm
-2. Next: remaining supports (send length × depth × height for each)
-
-Still useful if you have them: joist/beam width, gap from a laser to each soffit, screw diameter.
+1. **Part 1** — 220 × 20 × 8 mm
+2. **Part 2** — 190 × 20 × 4 mm
+3. Screws — 3.5 × 30 mm countersunk
+4. Next: remaining supports (send length × depth × height for each)
 
 ## Files
 
