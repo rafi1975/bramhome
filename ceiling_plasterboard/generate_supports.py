@@ -31,6 +31,11 @@ from trimesh.creation import cylinder as _cylinder
 NEW_BOARD = 13.0
 OLD_BOARD = 17.0
 
+# Part 1 — measured strip (mm): along joist × across joist × pack thickness
+SUPPORT_1_LENGTH = 220.0
+SUPPORT_1_DEPTH = 20.0
+SUPPORT_1_HEIGHT = 8.0
+
 # Common timber joist widths (EU 45 / 60 / 80 / 100, UK/IE dressed 47)
 JOIST_WIDTHS = (45.0, 47.0, 60.0, 80.0, 100.0)
 
@@ -253,17 +258,24 @@ def make_shim(thick: float, hole: float = CLEARANCE_HOLE) -> trimesh.Trimesh:
 
 
 def make_packer_strip(
-    length: float = 200.0,
-    width: float = 40.0,
-    thick: float = 4.0,
+    length: float = SUPPORT_1_LENGTH,
+    width: float = SUPPORT_1_DEPTH,
+    thick: float = SUPPORT_1_HEIGHT,
     hole: float = CLEARANCE_HOLE,
 ) -> trimesh.Trimesh:
-    """Long 4 mm strip: sit on the joist soffit, 13 mm board screws through it."""
-    plate = rounded_plate(length, width, thick, radius=4.0)
+    """Strip on the joist soffit. Board screws through it into timber.
+
+    Default is the first measured part: 220 × 20 × 8 mm.
+    """
+    radius = 2.0 if width <= 24.0 else 4.0
+    end_inset = 15.0 if length >= 80.0 else max(8.0, length * 0.12)
+    plate = rounded_plate(length, width, thick, radius=radius)
     y = width / 2.0
-    n = max(2, int(round((length - 24.0) / 40.0)) + 1)
-    xs = np.linspace(12.0, length - 12.0, n)
+    pitch = 48.0
+    n = max(2, int(round((length - 2.0 * end_inset) / pitch)) + 1)
+    xs = np.linspace(end_inset, length - end_inset, n)
     tools = [cyl(hole / 2.0, thick + 0.8, float(x), y, thick / 2.0) for x in xs]
+    # Recessed thickness digit on a 60 mm window at the start of the strip
     tools.extend(thickness_label_cutters(thick, min(60.0, length), width, thick))
     return drop_to_bed(subtract(plate, *tools))
 
@@ -493,6 +505,13 @@ def build_all(
             f"{info['extents_mm'][2]:5.1f}  wt={info['watertight']}"
         )
 
+    print("Measured parts")
+    add(
+        "support_220x20x8.stl",
+        make_packer_strip(SUPPORT_1_LENGTH, SUPPORT_1_DEPTH, SUPPORT_1_HEIGHT),
+        "part 1: 220 × 20 × 8 mm strip (measured)",
+    )
+
     print("Shims / packers")
     for t in shim_thicknesses:
         tag = str(int(t)) if t == int(t) else str(t).replace(".", "p")
@@ -501,7 +520,7 @@ def build_all(
 
     add(
         f"packer_strip_{int(pack)}mm.stl",
-        make_packer_strip(thick=pack),
+        make_packer_strip(length=200.0, width=40.0, thick=pack),
         f"{pack:.0f} mm strip for 13 mm board on a level joist",
     )
 
@@ -530,6 +549,9 @@ def build_all(
         "new_board_mm": new_board,
         "old_board_mm": old_board,
         "pack_mm": pack,
+        "measured": {
+            "part_1_mm": [SUPPORT_1_LENGTH, SUPPORT_1_DEPTH, SUPPORT_1_HEIGHT],
+        },
         "joist_widths_mm": list(joist_widths),
         "parts": reports,
     }

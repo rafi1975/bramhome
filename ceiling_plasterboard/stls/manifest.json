@@ -2,6 +2,13 @@
   "new_board_mm": 13.0,
   "old_board_mm": 17.0,
   "pack_mm": 4.0,
+  "measured": {
+    "part_1_mm": [
+      220.0,
+      20.0,
+      8.0
+    ]
+  },
   "joist_widths_mm": [
     45.0,
     47.0,
@@ -10,6 +17,18 @@
     100.0
   ],
   "parts": [
+    {
+      "file": "support_220x20x8.stl",
+      "watertight": true,
+      "triangles": 1334,
+      "volume_mm3": 34431.8,
+      "extents_mm": [
+        220.0,
+        20.0,
+        8.0
+      ],
+      "note": "part 1: 220 \u00d7 20 \u00d7 8 mm strip (measured)"
+    },
     {
       "file": "shim_1mm.stl",
       "watertight": true,

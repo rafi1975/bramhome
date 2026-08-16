@@ -6,7 +6,21 @@ Printed parts are **spacers and clips**. Drywall screws must go through the plas
 
 ![4 mm packer, seam biscuit, and shim stack to a laser line](diagrams/pack_and_joint.svg)
 
-## What to print first
+## Part 1 (measured) — print this
+
+| | mm |
+|--|--:|
+| Length (along joist) | **220** |
+| Depth (across joist) | **20** |
+| Height (pack thickness) | **8** |
+
+File: [`stls/support_220x20x8.stl`](stls/support_220x20x8.stl)
+
+Single row of Ø4.8 clearance holes on the centreline. Print **flat on the bed**, no supports. PETG preferred; PLA is OK in compression if the screw reaches timber.
+
+Screw length = 13 mm board + 8 mm packer + ≥ 25 mm into timber → use **50 mm** screws.
+
+## Other parts in the kit
 
 | Situation | Part | File |
 |-----------|------|------|
@@ -90,7 +104,8 @@ All parts fit the 256 mm cube. No supports on any of them.
 
 | Part | On the bed |
 |------|------------|
-| Shims, packer strip | Flat face down |
+| **Part 1** `support_220x20x8` | Flat 220×20 face down |
+| Shims, 4 mm packer strip | Flat face down |
 | Joist saddle | Base down, arms up |
 | Side hanger | Large plate down, flange standing up |
 | Stepped backer | Flat (cavity) face down, step up |
@@ -114,12 +129,12 @@ python generate_supports.py --joist-width 45,60
 python generate_supports.py --new-board 13 --old-board 17 --joist-width 72
 ```
 
-Useful measurements to send for a custom set:
+Measured so far:
 
-1. Joist / beam **width** (mm), timber or steel
-2. Gap from a laser line to **each** soffit (mm)
-3. Spacing between joists (mm) if the cut is mid-span
-4. Screw diameter you will use
+1. **Part 1 strip** — 220 × 20 × 8 mm
+2. Next: remaining supports (send length × depth × height for each)
+
+Still useful if you have them: joist/beam width, gap from a laser to each soffit, screw diameter.
 
 ## Files
 
