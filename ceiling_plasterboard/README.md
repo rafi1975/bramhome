@@ -17,6 +17,7 @@ Screws: **3.5 × 30 mm** countersunk. Through-hole Ø4.0, head recess Ø8.2 × 9
 | 3 | 130 | 20 | 4 | [`stls/support_130x20x4.stl`](stls/support_130x20x4.stl) |
 | 4 | 190 | 20 | 5 | [`stls/support_190x20x5.stl`](stls/support_190x20x5.stl) |
 | 5 | 60 × 60 L | 20 | 5 | [`stls/support_L_60x60.stl`](stls/support_L_60x60.stl) |
+| 6 | 100 | 20 | 5 | [`stls/support_100x20x5.stl`](stls/support_100x20x5.stl) |
 
 Screw the strip to the beam first; heads hide in the recesses so the plasterboard sits flat. 30 mm into an 8 mm strip leaves ~22 mm in timber; into a 4 mm strip leaves ~26 mm.
 
@@ -143,8 +144,9 @@ Measured so far:
 3. **Part 3** — 130 × 20 × 4 mm
 4. **Part 4** — 190 × 20 × 5 mm
 5. **Part 5** — 60 × 60 mm L (20 mm wide × 5 mm thick), Ø4.0 no countersink
-6. Screws — 3.5 × 30 mm
-7. Next: remaining supports (send length × depth × height for each)
+6. **Part 6** — 100 × 20 × 5 mm
+7. Screws — 3.5 × 30 mm
+8. Next: remaining supports (send length × depth × height for each)
 
 ## Files
 
