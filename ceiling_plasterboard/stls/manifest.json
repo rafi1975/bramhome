@@ -1,0 +1,355 @@
+{
+  "new_board_mm": 13.0,
+  "old_board_mm": 17.0,
+  "pack_mm": 4.0,
+  "measured": {
+    "part_1_mm": [
+      220.0,
+      20.0,
+      8.0
+    ],
+    "part_2_mm": [
+      190.0,
+      20.0,
+      4.0
+    ],
+    "screw": "3.5x30 CSK",
+    "shank_hole_mm": 4.0,
+    "head_recess_mm": 8.2,
+    "part_3_mm": [
+      130.0,
+      20.0,
+      4.0
+    ],
+    "part_4_mm": [
+      190.0,
+      20.0,
+      5.0
+    ],
+    "part_5_L_mm": [
+      60.0,
+      60.0,
+      20.0,
+      5.0
+    ],
+    "part_6_mm": [
+      100.0,
+      20.0,
+      5.0
+    ],
+    "part_7_mm": [
+      190.0,
+      20.0,
+      1.5
+    ]
+  },
+  "joist_widths_mm": [
+    45.0,
+    47.0,
+    60.0,
+    80.0,
+    100.0
+  ],
+  "parts": [
+    {
+      "file": "support_220x20x8.stl",
+      "watertight": true,
+      "triangles": 2192,
+      "volume_mm3": 34404.3,
+      "extents_mm": [
+        220.0,
+        20.0,
+        8.0
+      ],
+      "note": "part 1: 220 \u00d7 20 \u00d7 8 mm, 3.5\u00d730 CSK recesses"
+    },
+    {
+      "file": "support_190x20x4.stl",
+      "watertight": true,
+      "triangles": 1806,
+      "volume_mm3": 14772.2,
+      "extents_mm": [
+        190.0,
+        20.0,
+        4.0
+      ],
+      "note": "part 2: 190 \u00d7 20 \u00d7 4 mm, 3.5\u00d730 CSK recesses"
+    },
+    {
+      "file": "support_130x20x4.stl",
+      "watertight": true,
+      "triangles": 1424,
+      "volume_mm3": 10075.7,
+      "extents_mm": [
+        130.0,
+        20.0,
+        4.0
+      ],
+      "note": "part 3: 130 \u00d7 20 \u00d7 4 mm, 3.5\u00d730 CSK recesses"
+    },
+    {
+      "file": "support_190x20x5.stl",
+      "watertight": true,
+      "triangles": 1806,
+      "volume_mm3": 18518.6,
+      "extents_mm": [
+        190.0,
+        20.0,
+        5.0
+      ],
+      "note": "part 4: 190 \u00d7 20 \u00d7 5 mm, 3.5\u00d730 CSK recesses"
+    },
+    {
+      "file": "support_L_60x60.stl",
+      "watertight": true,
+      "triangles": 822,
+      "volume_mm3": 12544.6,
+      "extents_mm": [
+        60.0,
+        20.0,
+        60.0
+      ],
+      "note": "part 5: 60 \u00d7 60 mm L, 20 mm wide \u00d7 5 mm thick, \u00d84.0 no CSK"
+    },
+    {
+      "file": "support_100x20x5.stl",
+      "watertight": true,
+      "triangles": 1020,
+      "volume_mm3": 9750.6,
+      "extents_mm": [
+        100.0,
+        20.0,
+        5.0
+      ],
+      "note": "part 6: 100 \u00d7 20 \u00d7 5 mm, 3.5\u00d730 CSK recesses"
+    },
+    {
+      "file": "support_190x20x1.5.stl",
+      "watertight": true,
+      "triangles": 1038,
+      "volume_mm3": 5619.6,
+      "extents_mm": [
+        190.0,
+        20.0,
+        1.5
+      ],
+      "note": "part 7: 190 \u00d7 20 \u00d7 1.5 mm, \u00d84.0 through (too thin to hide CSK heads)"
+    },
+    {
+      "file": "shim_1mm.stl",
+      "watertight": true,
+      "triangles": 684,
+      "volume_mm3": 1953.4,
+      "extents_mm": [
+        50.0,
+        40.0,
+        1.0
+      ],
+      "note": "leveling shim"
+    },
+    {
+      "file": "shim_2mm.stl",
+      "watertight": true,
+      "triangles": 742,
+      "volume_mm3": 3898.8,
+      "extents_mm": [
+        50.0,
+        40.0,
+        2.0
+      ],
+      "note": "leveling shim"
+    },
+    {
+      "file": "shim_3mm.stl",
+      "watertight": true,
+      "triangles": 728,
+      "volume_mm3": 5854.9,
+      "extents_mm": [
+        50.0,
+        40.0,
+        3.0
+      ],
+      "note": "leveling shim"
+    },
+    {
+      "file": "shim_4mm.stl",
+      "watertight": true,
+      "triangles": 716,
+      "volume_mm3": 7813.7,
+      "extents_mm": [
+        50.0,
+        40.0,
+        4.0
+      ],
+      "note": "board-thickness compensator (13\u219217 mm)"
+    },
+    {
+      "file": "shim_5mm.stl",
+      "watertight": true,
+      "triangles": 742,
+      "volume_mm3": 9767.2,
+      "extents_mm": [
+        50.0,
+        40.0,
+        5.0
+      ],
+      "note": "leveling shim"
+    },
+    {
+      "file": "shim_8mm.stl",
+      "watertight": true,
+      "triangles": 760,
+      "volume_mm3": 15630.2,
+      "extents_mm": [
+        50.0,
+        40.0,
+        8.0
+      ],
+      "note": "leveling shim"
+    },
+    {
+      "file": "shim_10mm.stl",
+      "watertight": true,
+      "triangles": 768,
+      "volume_mm3": 19539.6,
+      "extents_mm": [
+        50.0,
+        40.0,
+        10.0
+      ],
+      "note": "leveling shim"
+    },
+    {
+      "file": "shim_15mm.stl",
+      "watertight": true,
+      "triangles": 768,
+      "volume_mm3": 29322.8,
+      "extents_mm": [
+        50.0,
+        40.0,
+        15.0
+      ],
+      "note": "leveling shim"
+    },
+    {
+      "file": "shim_20mm.stl",
+      "watertight": true,
+      "triangles": 828,
+      "volume_mm3": 39092.7,
+      "extents_mm": [
+        50.0,
+        40.0,
+        20.0
+      ],
+      "note": "leveling shim"
+    },
+    {
+      "file": "packer_strip_4mm.stl",
+      "watertight": true,
+      "triangles": 2182,
+      "volume_mm3": 31427.1,
+      "extents_mm": [
+        200.0,
+        40.0,
+        4.0
+      ],
+      "note": "4 mm strip for 13 mm board on a level joist"
+    },
+    {
+      "file": "joist_saddle_45mm.stl",
+      "watertight": true,
+      "triangles": 812,
+      "volume_mm3": 23332.2,
+      "extents_mm": [
+        50.0,
+        55.2,
+        32.0
+      ],
+      "note": "U-clip for 45 mm timber; 4 mm base"
+    },
+    {
+      "file": "joist_saddle_47mm.stl",
+      "watertight": true,
+      "triangles": 812,
+      "volume_mm3": 23732.2,
+      "extents_mm": [
+        50.0,
+        57.2,
+        32.0
+      ],
+      "note": "U-clip for 47 mm timber; 4 mm base"
+    },
+    {
+      "file": "joist_saddle_60mm.stl",
+      "watertight": true,
+      "triangles": 812,
+      "volume_mm3": 26332.2,
+      "extents_mm": [
+        50.0,
+        70.2,
+        32.0
+      ],
+      "note": "U-clip for 60 mm timber; 4 mm base"
+    },
+    {
+      "file": "joist_saddle_80mm.stl",
+      "watertight": true,
+      "triangles": 812,
+      "volume_mm3": 30332.2,
+      "extents_mm": [
+        50.0,
+        90.2,
+        32.0
+      ],
+      "note": "U-clip for 80 mm timber; 4 mm base"
+    },
+    {
+      "file": "joist_saddle_100mm.stl",
+      "watertight": true,
+      "triangles": 812,
+      "volume_mm3": 34332.2,
+      "extents_mm": [
+        50.0,
+        110.2,
+        32.0
+      ],
+      "note": "U-clip for 100 mm timber; 4 mm base"
+    },
+    {
+      "file": "side_hanger_slotted.stl",
+      "watertight": true,
+      "triangles": 846,
+      "volume_mm3": 40651.0,
+      "extents_mm": [
+        50.0,
+        85.0,
+        45.5
+      ],
+      "note": "slotted L-hanger, ~45 mm drop adjustment"
+    },
+    {
+      "file": "stepped_edge_backer.stl",
+      "watertight": true,
+      "triangles": 2390,
+      "volume_mm3": 59025.7,
+      "extents_mm": [
+        120.0,
+        50.0,
+        12.0
+      ],
+      "note": "cavity backer at a cut joint"
+    },
+    {
+      "file": "seam_biscuit.stl",
+      "watertight": true,
+      "triangles": 820,
+      "volume_mm3": 14611.2,
+      "extents_mm": [
+        41.4,
+        18.9,
+        60.0
+      ],
+      "note": "H-clip onto 17 mm cut edge, ledge for 13 mm"
+    }
+  ]
+}
