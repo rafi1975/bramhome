@@ -36,6 +36,11 @@
       100.0,
       20.0,
       5.0
+    ],
+    "part_7_mm": [
+      190.0,
+      20.0,
+      1.5
     ]
   },
   "joist_widths_mm": [
@@ -117,6 +122,18 @@
         5.0
       ],
       "note": "part 6: 100 \u00d7 20 \u00d7 5 mm, 3.5\u00d730 CSK recesses"
+    },
+    {
+      "file": "support_190x20x1.5.stl",
+      "watertight": true,
+      "triangles": 1038,
+      "volume_mm3": 5619.6,
+      "extents_mm": [
+        190.0,
+        20.0,
+        1.5
+      ],
+      "note": "part 7: 190 \u00d7 20 \u00d7 1.5 mm, \u00d84.0 through (too thin to hide CSK heads)"
     },
     {
       "file": "shim_1mm.stl",

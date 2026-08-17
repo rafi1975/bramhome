@@ -18,10 +18,13 @@ Screws: **3.5 × 30 mm** countersunk. Through-hole Ø4.0, head recess Ø8.2 × 9
 | 4 | 190 | 20 | 5 | [`stls/support_190x20x5.stl`](stls/support_190x20x5.stl) |
 | 5 | 60 × 60 L | 20 | 5 | [`stls/support_L_60x60.stl`](stls/support_L_60x60.stl) |
 | 6 | 100 | 20 | 5 | [`stls/support_100x20x5.stl`](stls/support_100x20x5.stl) |
+| 7 | 190 | 20 | 1.5 | [`stls/support_190x20x1.5.stl`](stls/support_190x20x1.5.stl) |
 
 Screw the strip to the beam first; heads hide in the recesses so the plasterboard sits flat. 30 mm into an 8 mm strip leaves ~22 mm in timber; into a 4 mm strip leaves ~26 mm.
 
 **Part 5** is a 60 × 60 mm L-bracket (20 mm wide, 5 mm thick). Two Ø4.0 through-holes on each leg for the same 3.5 × 30 screws, **no countersink**. Print the 60 × 20 face on the bed; the other leg stands up. No supports.
+
+**Part 7** is 190 × 20 × **1.5 mm**. A 3.5 mm countersunk head is taller than 1.5 mm, so this strip has plain Ø4.0 through-holes (no recess). Print flat, 100 % infill, 0.16 mm layers.
 
 If you later drive the same 30 mm screws *through* 13 mm board + 8 mm strip, only ~9 mm reaches timber — too short. Use longer screws for that, or fix the strip first as above.
 
@@ -111,7 +114,8 @@ All parts fit the 256 mm cube. No supports on any of them.
 
 | Part | On the bed |
 |------|------------|
-| **Parts 1–4** measured strips | Flat face down, **recesses up** |
+| **Parts 1–4, 6** measured strips | Flat face down, **recesses up** |
+| **Part 7** `support_190x20x1.5` | Flat face down (no recess) |
 | **Part 5** `support_L_60x60` | 60 × 20 face down, other leg up |
 | Shims, 4 mm packer strip | Flat face down |
 | Joist saddle | Base down, arms up |
@@ -145,8 +149,9 @@ Measured so far:
 4. **Part 4** — 190 × 20 × 5 mm
 5. **Part 5** — 60 × 60 mm L (20 mm wide × 5 mm thick), Ø4.0 no countersink
 6. **Part 6** — 100 × 20 × 5 mm
-7. Screws — 3.5 × 30 mm
-8. Next: remaining supports (send length × depth × height for each)
+7. **Part 7** — 190 × 20 × 1.5 mm (Ø4.0 through, no CSK — too thin)
+8. Screws — 3.5 × 30 mm
+9. Next: remaining supports (send length × depth × height for each)
 
 ## Files
 

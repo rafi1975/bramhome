@@ -62,6 +62,11 @@ SUPPORT_6_LENGTH = 100.0
 SUPPORT_6_DEPTH = 20.0
 SUPPORT_6_HEIGHT = 5.0
 
+# Part 7 — 1.5 mm is too thin for a CSK head recess
+SUPPORT_7_LENGTH = 190.0
+SUPPORT_7_DEPTH = 20.0
+SUPPORT_7_HEIGHT = 1.5
+
 # 3.5 × 30 mm countersunk wood screws (DIN 7997 / typical SPAX)
 SCREW_SHANK = 3.5
 SCREW_LENGTH = 30.0
@@ -698,6 +703,16 @@ def build_all(
         make_packer_strip(SUPPORT_6_LENGTH, SUPPORT_6_DEPTH, SUPPORT_6_HEIGHT),
         "part 6: 100 × 20 × 5 mm, 3.5×30 CSK recesses",
     )
+    add(
+        "support_190x20x1.5.stl",
+        make_packer_strip(
+            SUPPORT_7_LENGTH,
+            SUPPORT_7_DEPTH,
+            SUPPORT_7_HEIGHT,
+            countersink=False,
+        ),
+        "part 7: 190 × 20 × 1.5 mm, Ø4.0 through (too thin to hide CSK heads)",
+    )
 
     print("Shims / packers")
     for t in shim_thicknesses:
@@ -743,6 +758,7 @@ def build_all(
             "part_4_mm": [SUPPORT_4_LENGTH, SUPPORT_4_DEPTH, SUPPORT_4_HEIGHT],
             "part_5_L_mm": [L_LEG, L_LEG, L_WIDTH, L_THICK],
             "part_6_mm": [SUPPORT_6_LENGTH, SUPPORT_6_DEPTH, SUPPORT_6_HEIGHT],
+            "part_7_mm": [SUPPORT_7_LENGTH, SUPPORT_7_DEPTH, SUPPORT_7_HEIGHT],
             "screw": "3.5x30 CSK",
             "shank_hole_mm": SCREW_CLEARANCE,
             "head_recess_mm": SCREW_HEAD_OD,
