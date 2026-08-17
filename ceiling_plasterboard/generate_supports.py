@@ -52,6 +52,11 @@ SUPPORT_4_LENGTH = 190.0
 SUPPORT_4_DEPTH = 20.0
 SUPPORT_4_HEIGHT = 5.0
 
+# Part 5 — equal-angle L, 60 × 60 mm legs
+L_LEG = 60.0
+L_WIDTH = 20.0  # matches the measured strips
+L_THICK = 5.0
+
 # 3.5 × 30 mm countersunk wood screws (DIN 7997 / typical SPAX)
 SCREW_SHANK = 3.5
 SCREW_LENGTH = 30.0
@@ -125,6 +130,32 @@ def teardrop_y(radius: float, length: float, cx: float, cy: float, cz: float) ->
     return union(body, _mesh(verts, faces))
 
 
+def teardrop_x(radius: float, length: float, cx: float, cy: float, cz: float) -> trimesh.Trimesh:
+    """Horizontal hole along X with a +Z teardrop so it prints without supports."""
+    body = cyl(radius, length, cx, cy, cz, axis="x")
+    tip = radius * 1.15
+    x0, x1 = cx - length / 2.0, cx + length / 2.0
+    verts = [
+        [x0, cy - radius, cz],
+        [x0, cy + radius, cz],
+        [x0, cy, cz + tip],
+        [x1, cy - radius, cz],
+        [x1, cy + radius, cz],
+        [x1, cy, cz + tip],
+    ]
+    faces = [
+        (0, 1, 2),
+        (3, 5, 4),
+        (0, 2, 5),
+        (0, 5, 3),
+        (1, 4, 5),
+        (1, 5, 2),
+        (0, 3, 4),
+        (0, 4, 1),
+    ]
+    return union(body, _mesh(verts, faces))
+
+
 def wedge_gusset(x0: float, x1: float, y: float, z: float, leg: float) -> trimesh.Trimesh:
     """Right-angle 45° gusset: legs along +Y and +Z, extruded x0→x1."""
     verts = [
@@ -144,6 +175,29 @@ def wedge_gusset(x0: float, x1: float, y: float, z: float, leg: float) -> trimes
         (2, 5, 4),  # hypotenuse
         (0, 2, 4),  # left
         (1, 5, 3),  # right
+    ]
+    return _mesh(verts, faces)
+
+
+def wedge_gusset_xz(y0: float, y1: float, x: float, z: float, leg: float) -> trimesh.Trimesh:
+    """Right-angle 45° gusset: legs along +X and +Z, extruded y0→y1."""
+    verts = [
+        [x, y0, z],
+        [x, y1, z],
+        [x + leg, y0, z],
+        [x + leg, y1, z],
+        [x, y0, z + leg],
+        [x, y1, z + leg],
+    ]
+    faces = [
+        (0, 1, 3),
+        (0, 3, 2),
+        (0, 4, 5),
+        (0, 5, 1),
+        (2, 3, 5),
+        (2, 5, 4),
+        (0, 2, 4),
+        (1, 5, 3),
     ]
     return _mesh(verts, faces)
 
@@ -343,6 +397,44 @@ def make_packer_strip(
     if label:
         tools.extend(thickness_label_cutters(thick, min(60.0, length), width, thick))
     return drop_to_bed(subtract(plate, *tools))
+
+
+def make_l_bracket(
+    leg: float = L_LEG,
+    width: float = L_WIDTH,
+    thick: float = L_THICK,
+    hole: float = SCREW_CLEARANCE,
+    inset: float = 15.0,
+    gusset: float = 12.0,
+) -> trimesh.Trimesh:
+    """Equal-angle L: 60 × 60 mm legs, 20 mm wide, 5 mm thick.
+
+    Two Ø4.0 through-holes on each leg (3.5 × 30), no countersink.
+    Print the 60 × 20 face on the bed; the other leg stands up. Inside
+    45° gusset prints from the bed so the corner is not a layer joint.
+    Standing-leg holes are teardrops (point +Z) so they need no supports.
+    """
+    bed = aabb(0, leg, 0, width, 0, thick)
+    stand = aabb(0, thick, 0, width, 0, leg)
+    body = union(bed, stand)
+    body = union(body, wedge_gusset_xz(1.0, width - 1.0, thick, thick, gusset))
+
+    y = width / 2.0
+    h1 = thick + inset
+    h2 = leg - inset
+    # Bed-leg holes through Z (vertical)
+    body = subtract(
+        body,
+        cyl(hole / 2.0, thick + 1.2, h1, y, thick / 2.0),
+        cyl(hole / 2.0, thick + 1.2, h2, y, thick / 2.0),
+    )
+    # Standing-leg holes through X (horizontal) — teardrop for print
+    body = subtract(
+        body,
+        teardrop_x(hole / 2.0, thick + 2.0, thick / 2.0, y, h1),
+        teardrop_x(hole / 2.0, thick + 2.0, thick / 2.0, y, h2),
+    )
+    return drop_to_bed(body)
 
 
 def make_joist_saddle(
@@ -591,6 +683,11 @@ def build_all(
         make_packer_strip(SUPPORT_4_LENGTH, SUPPORT_4_DEPTH, SUPPORT_4_HEIGHT),
         "part 4: 190 × 20 × 5 mm, 3.5×30 CSK recesses",
     )
+    add(
+        "support_L_60x60.stl",
+        make_l_bracket(),
+        "part 5: 60 × 60 mm L, 20 mm wide × 5 mm thick, Ø4.0 no CSK",
+    )
 
     print("Shims / packers")
     for t in shim_thicknesses:
@@ -634,6 +731,7 @@ def build_all(
             "part_2_mm": [SUPPORT_2_LENGTH, SUPPORT_2_DEPTH, SUPPORT_2_HEIGHT],
             "part_3_mm": [SUPPORT_3_LENGTH, SUPPORT_3_DEPTH, SUPPORT_3_HEIGHT],
             "part_4_mm": [SUPPORT_4_LENGTH, SUPPORT_4_DEPTH, SUPPORT_4_HEIGHT],
+            "part_5_L_mm": [L_LEG, L_LEG, L_WIDTH, L_THICK],
             "screw": "3.5x30 CSK",
             "shank_hole_mm": SCREW_CLEARANCE,
             "head_recess_mm": SCREW_HEAD_OD,
