@@ -1,0 +1,256 @@
+# Homey Energy Dongle → Home Assistant
+#
+# Replaces the Homey firmware with ESPHome. The dongle parses DSMR / P1
+# telegrams on the device and publishes sensors over the ESPHome API.
+# Requires the ESPHome add-on 2026.1.0 or newer (DSMR on ESP-IDF).
+#
+# Hardware (Athom): ESP32-C6, 4 MB flash
+#   GPIO4  P1 RX, inverted
+#   GPIO23 P1 input enable, driven high
+#   GPIO2  WS2812 status LED (GRB)
+#
+# Wi-Fi and API keys live in secrets.yaml. See secrets.yaml.example.
+
+esphome:
+  name: homey-energy-dongle
+  friendly_name: Homey Energy Dongle
+  min_version: 2026.1.0
+  on_boot:
+    - priority: -100.0
+      then:
+        # Enables the P1 receiver. Without this the meter may never be heard.
+        - output.turn_on: p1_input_enable
+        - light.turn_on:
+            id: status_led
+            red: 0%
+            green: 0%
+            blue: 100%
+            brightness: 20%
+
+esp32:
+  board: esp32-c6-devkitc-1
+  variant: esp32c6
+  flash_size: 4MB
+  framework:
+    type: esp-idf
+    sdkconfig_options:
+      CONFIG_ESPTOOLPY_FLASHSIZE_4MB: y
+
+logger:
+
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+ota:
+  - platform: esphome
+    encryption:
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: "Homey Energy Dongle"
+    password: !secret ap_password
+
+captive_portal:
+
+output:
+  - id: p1_input_enable
+    platform: gpio
+    pin:
+      number: GPIO23
+      mode: output
+
+light:
+  - id: status_led
+    name: Status LED
+    platform: esp32_rmt_led_strip
+    channel_colors: GRB
+    pin: GPIO2
+    num_leds: 1
+    chipset: ws2812
+
+uart:
+  - id: p1_uart
+    baud_rate: 115200
+    rx_buffer_size: 4096
+    rx_pin:
+      number: GPIO4
+      # Set to false if the log shows bytes but no valid telegram.
+      inverted: true
+      # GPIO4 is a strapping pin on the C6. The dongle's P1 receiver is wired here.
+      ignore_strapping_warning: true
+
+# DSMR 2.2 meters (9600 7E1, no CRC) — replace the uart block above with:
+# uart:
+#   - id: p1_uart
+#     baud_rate: 9600
+#     data_bits: 7
+#     parity: EVEN
+#     stop_bits: 1
+#     rx_buffer_size: 1024
+#     rx_pin:
+#       number: GPIO4
+#       inverted: true
+#       ignore_strapping_warning: true
+
+dsmr:
+  uart_id: p1_uart
+  crc_check: true
+  max_telegram_length: 2500
+  # Luxembourg Smarty meters need the 32-character key from the utility:
+  # decryption_key: !secret dsmr_decryption_key
+  # Belgian meters that only report water on M-Bus channel 1:
+  # water_mbus_id: 1
+
+interval:
+  - interval: 15s
+    then:
+      - if:
+          condition:
+            lambda: |-
+              return id(import_power).has_state() || id(import_t1).has_state() || id(import_total).has_state();
+          then:
+            - light.turn_on:
+                id: status_led
+                red: 0%
+                green: 100%
+                blue: 0%
+                brightness: 20%
+
+sensor:
+  - platform: dsmr
+    energy_delivered_tariff1:
+      name: Energy imported tariff 1
+      id: import_t1
+    energy_delivered_tariff2:
+      name: Energy imported tariff 2
+      id: import_t2
+    energy_returned_tariff1:
+      name: Energy exported tariff 1
+      id: export_t1
+    energy_returned_tariff2:
+      name: Energy exported tariff 2
+      id: export_t2
+    # Cumulative registers used by Swedish and Luxembourg meters (OBIS 1.8.0 / 2.8.0).
+    energy_delivered_lux:
+      name: Energy imported total register
+      id: import_total
+    energy_returned_lux:
+      name: Energy exported total register
+      id: export_total
+
+    power_delivered:
+      name: Power imported
+      id: import_power
+    power_returned:
+      name: Power exported
+      id: export_power
+    power_delivered_l1:
+      name: Power imported L1
+    power_delivered_l2:
+      name: Power imported L2
+    power_delivered_l3:
+      name: Power imported L3
+    power_returned_l1:
+      name: Power exported L1
+    power_returned_l2:
+      name: Power exported L2
+    power_returned_l3:
+      name: Power exported L3
+
+    voltage_l1:
+      name: Voltage L1
+    voltage_l2:
+      name: Voltage L2
+    voltage_l3:
+      name: Voltage L3
+    current_l1:
+      name: Current L1
+    current_l2:
+      name: Current L2
+    current_l3:
+      name: Current L3
+
+    # Quarter-hour peak, used by the Belgian capacity tariff when the meter sends it.
+    active_demand_power:
+      name: Peak demand
+
+    gas_delivered:
+      name: Gas consumed Netherlands
+      id: gas_nl
+    gas_delivered_be:
+      name: Gas consumed Belgium
+      id: gas_be
+    water_delivered:
+      name: Water consumed
+
+  # One increasing sensor for the Home Assistant Energy dashboard.
+  # Dutch and Belgian meters sum tariff 1 + 2. Swedish meters fall back to the total register.
+  - platform: template
+    name: Energy imported
+    id: energy_imported
+    unit_of_measurement: kWh
+    accuracy_decimals: 3
+    device_class: energy
+    state_class: total_increasing
+    update_interval: 10s
+    lambda: |-
+      if (id(import_t1).has_state() || id(import_t2).has_state()) {
+        float total = 0;
+        if (id(import_t1).has_state()) total += id(import_t1).state;
+        if (id(import_t2).has_state()) total += id(import_t2).state;
+        return total;
+      }
+      if (id(import_total).has_state()) return id(import_total).state;
+      return NAN;
+
+  - platform: template
+    name: Energy exported
+    unit_of_measurement: kWh
+    accuracy_decimals: 3
+    device_class: energy
+    state_class: total_increasing
+    update_interval: 10s
+    lambda: |-
+      if (id(export_t1).has_state() || id(export_t2).has_state()) {
+        float total = 0;
+        if (id(export_t1).has_state()) total += id(export_t1).state;
+        if (id(export_t2).has_state()) total += id(export_t2).state;
+        return total;
+      }
+      if (id(export_total).has_state()) return id(export_total).state;
+      return NAN;
+
+  - platform: template
+    name: Gas consumed
+    unit_of_measurement: m³
+    accuracy_decimals: 3
+    device_class: gas
+    state_class: total_increasing
+    update_interval: 30s
+    lambda: |-
+      if (id(gas_nl).has_state()) return id(gas_nl).state;
+      if (id(gas_be).has_state()) return id(gas_be).state;
+      return NAN;
+
+  - platform: wifi_signal
+    name: Wi-Fi signal
+    update_interval: 60s
+
+text_sensor:
+  - platform: dsmr
+    identification:
+      name: Meter identification
+    p1_version:
+      name: P1 version
+    p1_version_be:
+      name: P1 version Belgium
+    timestamp:
+      name: Meter timestamp
+    electricity_tariff:
+      name: Active tariff
+  - platform: version
+    name: ESPHome version
+    hide_timestamp: true
