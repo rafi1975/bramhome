@@ -42,7 +42,7 @@ The builder is not under **Settings → Devices & services**. That ESPHome entry
 
 1. In Home Assistant, go to **Settings → Apps → Install App** (or **Settings → Add-ons → Add-on Store**). Search for **ESPHome Device Builder**, then click **Install**, **Start**, and **Open Web UI**. If it is missing from the list, open the ⋮ menu, choose **Repositories**, add `https://github.com/esphome/home-assistant-addon`, and search again. If **Apps** and **Add-ons** are both missing, this Home Assistant install cannot run apps; use the [ESPHome Device Builder desktop app](https://esphome.io/install/) instead.
 2. On the page that says **Add new device**, click that button. In **Create configuration**, open **Advanced set up options** and click **Empty Configuration**. Name it `homey-energy-dongle`.
-3. When the editor opens, paste in [`esphome/homey-energy-dongle.yaml`](esphome/homey-energy-dongle.yaml), replacing anything already there. Click **Save**.
+3. The builder then shows a starter for **Espressif ESP32 Dev Module**, with `board: esp32dev` in the editor on the right, and a button labeled **Install now**. Close that message. The Homey dongle is an ESP32-C6, so leave **Install now** alone. In the editor on the right, select all of the starter text and replace it with [`esphome/homey-energy-dongle.yaml`](esphome/homey-energy-dongle.yaml). The board line must read `board: esp32-c6-devkitc-1`. Click **Save**.
 4. If Save says a secret is missing, open **Secrets** in the Device Builder and add the keys from [`esphome/secrets.yaml.example`](esphome/secrets.yaml.example): your Wi-Fi name and password, an `ap_password` of at least 8 characters, and an `api_encryption_key`. Generate that key with:
 
    ```bash
