@@ -61,7 +61,7 @@ The builder is not under **Settings → Devices & services**. That ESPHome entry
 5. Click **Install**. The dialog title is **How do you want to install the firmware?** Choose **Plug into this computer**. Leave **On the network** alone; the dongle has not been installed yet.
 6. When the dialog says **Firmware built**, click **Open USB flasher**. Home Assistant opens [web.esphome.io](https://web.esphome.io) in a new tab because this page is not on HTTPS, so it cannot flash USB itself. The firmware is passed to that tab in the browser.
 7. Put the dongle in flash mode before connecting: unplug it, hold the button next to the USB-C port, and plug the cable into this computer. The LED stays off. Use Chrome or Edge.
-8. On the new tab, click **Connect & install** and choose the dongle's serial port. When it says **Installed and rebooting**, unplug USB, plug the dongle into the meter, and wait for the LED to turn green.
+8. On the new tab, click **Connect & install** and choose the dongle's serial port. When it says **Installed and rebooting**, close the logs window. **Waiting for serial output** stays empty because the dongle has left the USB port. Unplug USB, plug the dongle into the meter, and wait for the LED to turn green.
 
 Home Assistant should discover it under **Settings → Devices & services → ESPHome**. Enter the API encryption key from `secrets.yaml` when asked.
 
