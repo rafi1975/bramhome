@@ -41,9 +41,9 @@ The builder is not under **Settings → Devices & services**. That ESPHome entry
 **Prepare for first use** on the website only installs a blank ESPHome image and can join Wi-Fi. It does not read the meter. Use the steps below to install this config.
 
 1. In Home Assistant, go to **Settings → Apps → Install App** (or **Settings → Add-ons → Add-on Store**). Search for **ESPHome Device Builder**, then click **Install**, **Start**, and **Open Web UI**. If it is missing from the list, open the ⋮ menu, choose **Repositories**, add `https://github.com/esphome/home-assistant-addon`, and search again. If **Apps** and **Add-ons** are both missing, this Home Assistant install cannot run apps; use the [ESPHome Device Builder desktop app](https://esphome.io/install/) instead.
-2. In that web UI, create a device named `homey-energy-dongle`, board **ESP32-C6**.
-3. Replace the generated YAML with [`esphome/homey-energy-dongle.yaml`](esphome/homey-energy-dongle.yaml).
-4. Add the keys from [`esphome/secrets.yaml.example`](esphome/secrets.yaml.example) to your existing `/config/esphome/secrets.yaml`. The same API key is used for Home Assistant and for later wireless updates. Generate it with:
+2. On the page that says **Add new device**, click that button, then **Continue**, then **New Device Setup**. Name it `homey-energy-dongle`. Choose **ESP32**, then **ESP32-C6**. Enter your Wi-Fi name and password if it asks. When it says the configuration was created and offers to install, click **Skip**.
+3. Click **Edit** on the new device. In the generated text, copy the `key:` value under `api:`. You will need it as `api_encryption_key`. Then select all of the generated text and replace it with [`esphome/homey-energy-dongle.yaml`](esphome/homey-energy-dongle.yaml). Click **Save**.
+4. If Save says a secret is missing, open **Secrets** in the Device Builder and add the keys from [`esphome/secrets.yaml.example`](esphome/secrets.yaml.example). The setup wizard usually creates `wifi_ssid` and `wifi_password` already. For `api_encryption_key`, paste the key you copied, or generate one with:
 
    ```bash
    openssl rand -base64 32
