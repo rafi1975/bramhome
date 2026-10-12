@@ -11,10 +11,31 @@ thick walls, and a print orientation that puts layer lines *with* the pull.
 
 | File | Role |
 |------|------|
-| [`catching_piece.stl`](catching_piece.stl) | Inserts into the hatch recess (use with M8 bolt) |
-| [`catching_piece_printed_bar.stl`](catching_piece_printed_bar.stl) | Same body with a printed bar — fit-check only |
-| [`pole_hook.stl`](pole_hook.stl) | Sleeve + reinforced J-hook for the Ø28 mm pole |
+| [`catching_piece.step`](catching_piece.step) | **Fusion 360** solid — catch with M8 bolt hole |
+| [`catching_piece_printed_bar.step`](catching_piece_printed_bar.step) | Fusion solid — printed-bar fit-check variant |
+| [`pole_hook.step`](pole_hook.step) | **Fusion 360** solid — sleeve + hook |
+| [`attic_staircase_assembly.step`](attic_staircase_assembly.step) | Both parts side-by-side for one-shot import |
+| [`catching_piece.stl`](catching_piece.stl) | Slice-ready mesh (M8 bolt version) |
+| [`catching_piece_printed_bar.stl`](catching_piece_printed_bar.stl) | Mesh fit-check only |
+| [`pole_hook.stl`](pole_hook.stl) | Slice-ready mesh |
 | `*.scad` | Parametric OpenSCAD sources |
+| [`export_fusion.py`](export_fusion.py) | Regenerates the `.step` files (CadQuery) |
+
+## Edit in Fusion 360
+
+Use the **`.step`** files (true BRep solids — not meshes):
+
+1. In Fusion: **File → Open** (or drag the `.step` into the window)
+2. Units are **millimetres**
+3. You get solid bodies you can **Push/Pull**, edit holes, fillet, etc.
+4. When ready to print: **File → 3D Print** / export mesh, or keep using the `.stl` files
+
+To regenerate STEPs after changing dimensions in `export_fusion.py`:
+
+```bash
+pip install -r requirements.txt
+python3 export_fusion.py
+```
 
 ## Measured inputs
 
