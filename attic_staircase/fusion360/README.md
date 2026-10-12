@@ -12,16 +12,30 @@ parts inside Fusion with:
 - Timeline sketches / extrudes / revolves
 - Two components: `CatchingPiece` and `PoleHook`
 
-## Install & run
+## Download the script folder
 
-1. Download / clone this repo (or copy the `AtticStaircaseParts` folder)
-2. In Fusion 360: **Utilities → Add-Ins → Scripts and Add-Ins**
-3. Next to **My Scripts**, click **+**
-4. Choose the folder  
-   `attic_staircase/fusion360/AtticStaircaseParts`
-5. Select **AtticStaircaseParts** → **Run**
-6. Edit sizes with **Modify → Change Parameters**
-7. For printing: right-click a body → **Save as Mesh** (3MF/STL) for the P1S
+GitHub’s folder “⋯” menu has **no Download** for a single folder. Use one of these:
+
+### Easiest — ZIP of just the Fusion script
+Open this file and click **Download** (raw file download icon):
+
+https://github.com/rafi1975/bramhome/raw/cursor/attic-staircase-hook-catch-b525/attic_staircase/fusion360/AtticStaircaseParts.zip
+
+Unzip it. You should get a folder `AtticStaircaseParts` containing `.py` + `.manifest`.
+
+### Or — whole branch ZIP
+1. Open https://github.com/rafi1975/bramhome/tree/cursor/attic-staircase-hook-catch-b525  
+2. Green **Code** button → **Download ZIP**  
+3. Unzip, then go to `attic_staircase/fusion360/AtticStaircaseParts`
+
+## Install & run in Fusion
+
+1. In Fusion 360: **Utilities → Add-Ins → Scripts and Add-Ins**
+2. Next to **My Scripts**, click **+**
+3. Choose the unzipped **`AtticStaircaseParts`** folder
+4. Select **AtticStaircaseParts** → **Run**
+5. Edit sizes with **Modify → Change Parameters**
+6. For printing: right-click a body → **Save as Mesh** (3MF/STL) for the P1S
 
 ## Main parameters
 
