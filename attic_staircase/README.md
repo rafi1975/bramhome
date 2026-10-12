@@ -11,31 +11,35 @@ thick walls, and a print orientation that puts layer lines *with* the pull.
 
 | File | Role |
 |------|------|
-| [`catching_piece.step`](catching_piece.step) | **Fusion 360** solid — catch with M8 bolt hole |
-| [`catching_piece_printed_bar.step`](catching_piece_printed_bar.step) | Fusion solid — printed-bar fit-check variant |
-| [`pole_hook.step`](pole_hook.step) | **Fusion 360** solid — sleeve + hook |
-| [`attic_staircase_assembly.step`](attic_staircase_assembly.step) | Both parts side-by-side for one-shot import |
+| [`fusion360/AtticStaircaseParts/`](fusion360/AtticStaircaseParts/) | **Editable Fusion 360 model** (native parametric script) |
 | [`catching_piece.stl`](catching_piece.stl) | Slice-ready mesh (M8 bolt version) |
 | [`catching_piece_printed_bar.stl`](catching_piece_printed_bar.stl) | Mesh fit-check only |
 | [`pole_hook.stl`](pole_hook.stl) | Slice-ready mesh |
 | `*.scad` | Parametric OpenSCAD sources |
-| [`export_fusion.py`](export_fusion.py) | Regenerates the `.step` files (CadQuery) |
+| `*.step` | Exchange solids only (see below) |
 
-## Edit in Fusion 360
+## Edit in Fusion 360 (parametric — use this)
 
-Use the **`.step`** files (true BRep solids — not meshes):
+**STEP/STL cannot carry Fusion feature history.** A `.step` always imports as one
+locked Base Feature, so it feels “not editable”. For a real editable design, run
+the Fusion script:
 
-1. In Fusion: **File → Open** (or drag the `.step` into the window)
-2. Units are **millimetres**
-3. You get solid bodies you can **Push/Pull**, edit holes, fillet, etc.
-4. When ready to print: **File → 3D Print** / export mesh, or keep using the `.stl` files
+→ See **[`fusion360/README.md`](fusion360/README.md)**
 
-To regenerate STEPs after changing dimensions in `export_fusion.py`:
+Short version:
 
-```bash
-pip install -r requirements.txt
-python3 export_fusion.py
-```
+1. **Utilities → Add-Ins → Scripts and Add-Ins**
+2. **+** under My Scripts → select `fusion360/AtticStaircaseParts`
+3. **Run** → get `CatchingPiece` + `PoleHook` with User Parameters
+4. **Modify → Change Parameters** (or edit sketches in the Timeline)
+5. Right-click body → **Save as Mesh** for the P1S
+
+Save the document as `.f3d` on your computer to keep the native Fusion file.
+
+### STEP files (optional exchange only)
+
+The `.step` files are valid BRep solids for other CAD packages or reference, but
+in Fusion they are **not** parametric. Prefer the script above for editing.
 
 ## Measured inputs
 

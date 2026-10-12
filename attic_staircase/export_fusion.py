@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Build attic staircase parts as BRep solids and export STEP for Fusion 360.
+"""Export BRep STEP solids for CAD exchange.
 
-Open these .step files in Fusion 360 via Insert → Insert Mesh is NOT needed:
-use File → Open or Upload, then you get editable solid bodies (Push/Pull, holes, etc.).
+Note: Fusion 360 cannot turn STEP into editable feature history. For a parametric
+Fusion model, run fusion360/AtticStaircaseParts instead (see fusion360/README.md).
 
 Usage:
     python3 export_fusion.py

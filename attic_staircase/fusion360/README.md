@@ -1,0 +1,46 @@
+# Editable Fusion 360 models
+
+Imported **STEP/STL files are not feature-editable** in Fusion 360. STEP opens as a
+single *Base Feature* (a “dumb” solid). You can Press/Pull faces a little, but you
+**cannot** open sketches, change parameters, or edit the timeline the way a native
+Fusion design allows.
+
+To get a **real editable model**, run the script in this folder. It rebuilds both
+parts inside Fusion with:
+
+- User Parameters (`hole_d`, `pole_d`, `flange_od`, …)
+- Timeline sketches / extrudes / revolves
+- Two components: `CatchingPiece` and `PoleHook`
+
+## Install & run
+
+1. Download / clone this repo (or copy the `AtticStaircaseParts` folder)
+2. In Fusion 360: **Utilities → Add-Ins → Scripts and Add-Ins**
+3. Next to **My Scripts**, click **+**
+4. Choose the folder  
+   `attic_staircase/fusion360/AtticStaircaseParts`
+5. Select **AtticStaircaseParts** → **Run**
+6. Edit sizes with **Modify → Change Parameters**
+7. For printing: right-click a body → **Save as Mesh** (3MF/STL) for the P1S
+
+## Main parameters
+
+| Parameter | Default | Meaning |
+|-----------|--------:|---------|
+| `hole_d` | 50 mm | Hatch opening diameter |
+| `hole_depth` | 31 mm | Hatch opening depth |
+| `flange_od` | 80 mm | Cover flange |
+| `pole_d` | 28 mm | Wooden pole diameter |
+| `sleeve_wall` | 6 mm | Hook sleeve wall thickness |
+| `hook_throat` | 11 mm | Opening that grabs the M8 bar |
+| `m8_d` | 8.4 mm | Catch-bar bolt hole |
+
+## Files
+
+| Path | Role |
+|------|------|
+| `AtticStaircaseParts/AtticStaircaseParts.py` | Fusion script |
+| `AtticStaircaseParts/AtticStaircaseParts.manifest` | Script manifest |
+
+Save the resulting Fusion document as `.f3d` on your machine if you want a native
+Fusion archive to reopen later.
