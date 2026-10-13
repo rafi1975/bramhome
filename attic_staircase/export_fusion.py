@@ -21,12 +21,16 @@ OUT = Path(__file__).resolve().parent
 def catching_piece(*, use_printed_bar: bool = False) -> cq.Workplane:
     hole_d = 50.0
     hole_depth = 31.0
+    flat_top_d = 30.0
     plug_clearance = 0.5
     plug_od = hole_d - 2 * plug_clearance
+    flat_top_od = flat_top_d - 2 * plug_clearance
     flange_od = 80.0
     flange_thickness = 5.0
-    dome_bulge = 8.0
-    plug_cyl_h = hole_depth - dome_bulge - 0.5
+    plug_h = hole_depth - 0.5
+    cyl_fraction = 0.35
+    cyl_h = plug_h * cyl_fraction
+    tap_h = plug_h - cyl_h
 
     pocket_w = 34.0
     pocket_h = 26.0
@@ -42,35 +46,26 @@ def catching_piece(*, use_printed_bar: bool = False) -> cq.Workplane:
     screw_count = 4
 
     floor_screw_d = 4.0
-    floor_screw_r = 12.0
+    floor_screw_r = 9.0
     floor_screw_count = 3
 
-    plug_r = plug_od / 2
-
-    body = (
-        cq.Workplane("XY")
-        .circle(flange_od / 2)
-        .extrude(flange_thickness)
-    )
-    plug = (
+    body = cq.Workplane("XY").circle(flange_od / 2).extrude(flange_thickness)
+    cyl = (
         cq.Workplane("XY")
         .circle(plug_od / 2)
-        .extrude(plug_cyl_h)
+        .extrude(cyl_h)
         .translate((0, 0, flange_thickness))
     )
-    body = body.union(plug)
-
-    sphere = (
+    # Truncated cone / frustum → flat Ø30 top
+    frustum = (
         cq.Workplane("XY")
-        .sphere(plug_r)
-        .translate((0, 0, flange_thickness + plug_cyl_h - plug_r + dome_bulge))
+        .circle(plug_od / 2)
+        .workplane(offset=tap_h)
+        .circle(flat_top_od / 2)
+        .loft()
+        .translate((0, 0, flange_thickness + cyl_h))
     )
-    clip = (
-        cq.Workplane("XY")
-        .box(plug_od + 2, plug_od + 2, dome_bulge + 0.2, centered=(True, True, False))
-        .translate((0, 0, flange_thickness + plug_cyl_h))
-    )
-    body = body.union(sphere.intersect(clip))
+    body = body.union(cyl).union(frustum)
 
     pocket = (
         cq.Workplane("XY")
@@ -111,7 +106,7 @@ def catching_piece(*, use_printed_bar: bool = False) -> cq.Workplane:
         through = (
             cq.Workplane("XY")
             .circle(screw_d / 2)
-            .extrude(flange_thickness + plug_cyl_h + dome_bulge + 1)
+            .extrude(flange_thickness + plug_h + 1)
             .translate((x, y, -0.01))
         )
         cs = (
@@ -129,29 +124,19 @@ def catching_piece(*, use_printed_bar: bool = False) -> cq.Workplane:
         ang = math.radians(i * 360 / floor_screw_count + 90)
         x = floor_screw_r * math.cos(ang)
         y = floor_screw_r * math.sin(ang)
-        z0 = flange_thickness + plug_cyl_h - 1
         floor = (
             cq.Workplane("XY")
             .circle(floor_screw_d / 2)
-            .extrude(dome_bulge + 3)
-            .translate((x, y, z0))
+            .extrude(10)
+            .translate((x, y, flange_thickness + plug_h - 8))
         )
         body = body.cut(floor)
 
     return body
 
 
-def _cyl_y(d: float, x: float, z: float, width: float) -> cq.Workplane:
-    """Cylinder whose axis is Y, centred at (x, 0, z)."""
-    return (
-        cq.Workplane("XZ")
-        .center(x, z)
-        .circle(d / 2)
-        .extrude(width / 2, both=True)
-    )
-
-
 def pole_hook() -> cq.Workplane:
+    """Clean sleeve + J-hook matching pole_hook.scad."""
     pole_d = 28.0
     sleeve_clearance = 0.35
     sleeve_id = pole_d + 2 * sleeve_clearance
@@ -169,14 +154,15 @@ def pole_hook() -> cq.Workplane:
     hook_width = 16.0
     arm_t = 7.0
     crook_rise = 10.0
-    tip_back = 11.0
-    spine_drop = 28.0
-    spine_w = 10.0
+    tip_drop = 10.0
+    spine_drop = 26.0
 
     r_out = sleeve_od / 2
-    seat_x = r_out + throat / 2
+    seat_x = r_out + throat / 2 + 0.2
     seat_z = sleeve_length + crook_rise
-    outer = throat + 2 * arm_t
+    outer_r = throat / 2 + arm_t
+    r_in = throat / 2
+    tip_z = seat_z - tip_drop
 
     sleeve = cq.Workplane("XY").circle(sleeve_od / 2).extrude(sleeve_length)
     bore = (
@@ -187,73 +173,75 @@ def pole_hook() -> cq.Workplane:
     )
     body = sleeve.cut(bore)
 
-    crook = _cyl_y(outer, seat_x, seat_z, hook_width)
-
-    # Neck: tapered block from sleeve wall up into the crook (union, no hull)
+    # 2D hook profile on XZ, extruded in Y (mirrors clean_hook_2d)
+    # Build as solid unions of simple shapes — no leftover scraps
+    crook = (
+        cq.Workplane("XZ")
+        .center(seat_x, seat_z)
+        .circle(outer_r)
+        .extrude(hook_width / 2, both=True)
+    )
     neck = (
         cq.Workplane("XY")
-        .box(arm_t + 4, hook_width, crook_rise + 12, centered=(True, True, False))
-        .translate((r_out + (arm_t + 4) / 2 - 1, 0, sleeve_length - 10))
+        .box(
+            seat_x - r_out + arm_t * 0.5 + 0.2,
+            hook_width,
+            crook_rise + outer_r + 8,
+            centered=(True, True, False),
+        )
+        .translate(
+            (
+                r_out - 0.2 + (seat_x - r_out + arm_t * 0.5 + 0.2) / 2,
+                0,
+                sleeve_length - 8,
+            )
+        )
     )
-
-    # Top cap of the J
-    top_cap = (
-        cq.Workplane("XY")
-        .box(outer, hook_width, arm_t, centered=True)
-        .translate((seat_x, 0, seat_z + throat / 2 + arm_t / 2 - 0.5))
-    )
-
-    # Tip lip curling back toward the handle
-    tip_h = throat / 2 + tip_back
     tip = (
         cq.Workplane("XY")
-        .box(arm_t, hook_width, tip_h, centered=(True, True, False))
-        .translate(
-            (
-                seat_x + throat / 2 + arm_t / 2 - 0.5,
-                0,
-                seat_z - tip_h + arm_t / 2,
-            )
-        )
+        .box(arm_t, hook_width, seat_z - tip_z + r_in, centered=(True, True, False))
+        .translate((seat_x + r_in + arm_t / 2, 0, tip_z))
     )
-
-    # Spine rib down the +X face
+    crown = (
+        cq.Workplane("XY")
+        .box(throat + 2 * arm_t, hook_width, arm_t, centered=True)
+        .translate((seat_x, 0, seat_z + r_in + arm_t / 2))
+    )
     spine = (
         cq.Workplane("XY")
-        .box(wall + 1.5, spine_w, spine_drop, centered=(True, True, False))
-        .translate((r_out - 0.5 + (wall + 1.5) / 2, 0, sleeve_length - spine_drop))
-    )
-    spine_flare = (
-        cq.Workplane("XY")
-        .box(wall + 1.5, hook_width, 8, centered=(True, True, False))
-        .translate((r_out - 0.5 + (wall + 1.5) / 2, 0, sleeve_length - 8))
+        .box(wall * 0.75, hook_width * 0.7, spine_drop + 0.2, centered=(True, True, False))
+        .translate((r_out - 0.2 + wall * 0.75 / 2, 0, sleeve_length - spine_drop))
     )
 
-    hook = crook.union(neck).union(top_cap).union(tip).union(spine).union(spine_flare)
+    hook = crook.union(neck).union(tip).union(crown).union(spine)
 
-    seat = _cyl_y(throat, seat_x, seat_z, hook_width + 0.2)
+    throat_cut = (
+        cq.Workplane("XZ")
+        .center(seat_x, seat_z)
+        .circle(throat / 2)
+        .extrude(hook_width / 2 + 0.2, both=True)
+    )
     mouth = (
         cq.Workplane("XY")
-        .box(throat / 2 + arm_t + 8, hook_width + 1, throat, centered=True)
-        .translate((seat_x - 1 + (throat / 2 + arm_t + 8) / 2, 0, seat_z))
+        .box(outer_r + 8, hook_width + 1, throat, centered=(True, True, True))
+        .translate((seat_x + (outer_r + 8) / 2, 0, seat_z))
     )
-    lead = (
+    # Trim anything that invaded the sleeve bore region (x < r_out)
+    invade = (
         cq.Workplane("XY")
-        .box(6, hook_width + 1, 8, centered=True)
-        .translate(
-            (
-                seat_x + throat / 2 + 3.5,
-                0,
-                seat_z - throat / 2 - tip_back + 4,
-            )
-        )
-        .rotate(
-            (seat_x + throat / 2 + 0.5, 0, seat_z - throat / 2 - tip_back),
-            (0, 1, 0),
-            -35,
-        )
+        .box(sleeve_od, hook_width + 2, sleeve_length + crook_rise + outer_r + 20,
+             centered=(True, True, False))
+        .translate((-0.05, 0, -2))
     )
-    hook = hook.cut(seat).cut(mouth).cut(lead)
+    # Only cut the portion with x < r_out - 0.05
+    invade = (
+        cq.Workplane("XY")
+        .box(r_out + sleeve_od, hook_width + 2, sleeve_length + crook_rise + outer_r + 20,
+             centered=(False, True, False))
+        .translate((-sleeve_od, 0, -2))
+    )
+
+    hook = hook.cut(throat_cut).cut(mouth).cut(invade)
     body = body.union(hook).cut(bore)
 
     for z in (screw_z1, screw_z2):
@@ -264,7 +252,6 @@ def pole_hook() -> cq.Workplane:
             .translate((-(sleeve_od + 2) / 2, 0, z))
         )
         body = body.cut(screw)
-        # Countersink on +X outer wall
         cs = (
             cq.Workplane("YZ")
             .workplane(offset=sleeve_od / 2 - countersink_h)

@@ -46,14 +46,16 @@ in Fusion they are **not** parametric. Prefer the script above for editing.
 | Item | mm |
 |------|---:|
 | Hatch opening diameter | 50 |
-| Hatch opening depth (domed) | 31 |
+| Hatch opening depth | 31 |
+| Flat top (dome floor) diameter | 30 |
 | Pole diameter | 28 |
 
 ## Catching piece
 
 - **Ø80 mm flange** covers the torn laminate and lands screws in solid wood
   outside the 50 mm hole
-- **Ø49 mm plug** with a **domed tip** seats in the cavity so the part cannot tip
+- Plug: **Ø49 mm** at the mouth, tapering to a **flat Ø29 mm** top that seats on
+  the hatch’s flat Ø30 mm floor (dome sides, flat top)
 - **Pocket** 34 × 38 × 26 mm for the hook head
 - **M8 bolt** through the pocket is the real catch bar (steel) — the print only
   holds the bolt and transfers load into the wood screws

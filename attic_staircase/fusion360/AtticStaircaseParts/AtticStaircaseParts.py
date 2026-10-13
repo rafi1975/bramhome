@@ -39,12 +39,16 @@ def create_parameters(design):
     # --- Catch ---
     add_param(design, 'hole_d', '50 mm', 'Hatch opening diameter')
     add_param(design, 'hole_depth', '31 mm', 'Hatch opening depth')
+    add_param(design, 'flat_top_d', '30 mm', 'Flat floor diameter at top of dome')
     add_param(design, 'plug_clearance', '0.5 mm', 'Radial clearance')
-    add_param(design, 'plug_od', 'hole_d - 2 * plug_clearance', 'Plug OD')
+    add_param(design, 'plug_od', 'hole_d - 2 * plug_clearance', 'Plug OD at mouth')
+    add_param(design, 'flat_top_od', 'flat_top_d - 2 * plug_clearance', 'Plug flat-top OD')
     add_param(design, 'flange_od', '80 mm', 'Flange OD')
     add_param(design, 'flange_thickness', '5 mm', 'Flange thickness')
-    add_param(design, 'dome_bulge', '8 mm', 'Dome tip height')
-    add_param(design, 'plug_cyl_h', 'hole_depth - dome_bulge - 0.5 mm', 'Plug cylinder height')
+    add_param(design, 'plug_h', 'hole_depth - 0.5 mm', 'Plug height into cavity')
+    add_param(design, 'cyl_fraction', '0.35', 'Fraction of plug that stays near full Ø')
+    add_param(design, 'cyl_h', 'plug_h * cyl_fraction', 'Cylindrical plug height')
+    add_param(design, 'tap_h', 'plug_h - cyl_h', 'Taper height to flat top')
     add_param(design, 'pocket_w', '34 mm', 'Pocket width')
     add_param(design, 'pocket_len', '38 mm', 'Pocket length')
     add_param(design, 'pocket_h', '26 mm', 'Pocket depth')
@@ -55,7 +59,7 @@ def create_parameters(design):
     add_param(design, 'screw_d', '4.5 mm', 'Flange screw hole')
     add_param(design, 'screw_r', '33 mm', 'Flange screw pitch radius')
     add_param(design, 'floor_screw_d', '4 mm', 'Floor screw hole')
-    add_param(design, 'floor_screw_r', '12 mm', 'Floor screw pitch radius')
+    add_param(design, 'floor_screw_r', '9 mm', 'Floor screw pitch radius (inside Ø30)')
 
     # --- Hook ---
     add_param(design, 'pole_d', '28 mm', 'Pole diameter')
@@ -152,50 +156,46 @@ def build_catch(design, root):
                 adsk.fusion.FeatureOperations.NewBodyFeatureOperation)
     comp.bRepBodies.item(0).name = 'CatchingPiece'
 
-    # Plug on offset plane at flange top
+    # Cylindrical plug section at the mouth (near Ø50)
     pin = planes.createInput()
     pin.setByOffset(xy, adsk.core.ValueInput.createByString('flange_thickness'))
     plug_plane = planes.add(pin)
     plug_plane.name = 'PlugPlane'
 
     sk2 = sketches.add(plug_plane)
-    sk2.name = '02_Plug'
+    sk2.name = '02_PlugCyl'
     c2 = sk2.sketchCurves.sketchCircles.addByCenterRadius(adsk.core.Point3D.create(0, 0, 0), mm(24.5))
     dim_diameter(sk2, c2, 'plug_od')
-    extrude_one(comp, largest_profile(sk2), 'plug_cyl_h',
+    extrude_one(comp, largest_profile(sk2), 'cyl_h',
                 adsk.fusion.FeatureOperations.JoinFeatureOperation)
 
-    # Dome via revolve on XZ
-    sk3 = sketches.add(comp.xZConstructionPlane)
-    sk3.name = '03_DomeProfile'
-    lines = sk3.sketchCurves.sketchLines
-    arcs = sk3.sketchCurves.sketchArcs
+    # Tapered section → flat Ø30 top (loft between two circles)
+    pin2 = planes.createInput()
+    pin2.setByOffset(xy, adsk.core.ValueInput.createByString('flange_thickness + cyl_h'))
+    taper_plane = planes.add(pin2)
+    taper_plane.name = 'TaperStart'
 
-    # Temporary geometry (mm→cm); then lock with parameter dimensions
-    y0 = mm(27.5)   # flange 5 + plug_cyl ~22.5
-    y1 = mm(35.5)   # + dome 8
-    r = mm(24.5)
+    sk3a = sketches.add(taper_plane)
+    sk3a.name = '03a_TaperBase'
+    c3a = sk3a.sketchCurves.sketchCircles.addByCenterRadius(adsk.core.Point3D.create(0, 0, 0), mm(24.5))
+    dim_diameter(sk3a, c3a, 'plug_od')
 
-    axis = lines.addByTwoPoints(
-        adsk.core.Point3D.create(0, y0, 0),
-        adsk.core.Point3D.create(0, y1, 0),
-    )
-    rim = adsk.core.Point3D.create(r, y0, 0)
-    top = adsk.core.Point3D.create(0, y1, 0)
-    mid = adsk.core.Point3D.create(r * 0.72, y0 + mm(5.2), 0)
-    arcs.addByThreePoints(top, mid, rim)
-    chord = lines.addByTwoPoints(rim, adsk.core.Point3D.create(0, y0, 0))
+    pin3 = planes.createInput()
+    pin3.setByOffset(xy, adsk.core.ValueInput.createByString('flange_thickness + plug_h'))
+    flat_plane = planes.add(pin3)
+    flat_plane.name = 'FlatTop'
 
-    base = lines.addByTwoPoints(adsk.core.Point3D.create(0, 0, 0), adsk.core.Point3D.create(0, y0, 0))
-    base.isConstruction = True
-    dim_distance(sk3, axis.startSketchPoint, axis.endSketchPoint, 'dome_bulge')
-    dim_distance(sk3, chord.endSketchPoint, chord.startSketchPoint, 'plug_od / 2', 3, -4)
-    dim_distance(sk3, base.startSketchPoint, base.endSketchPoint, 'flange_thickness + plug_cyl_h', 6, 0)
+    sk3b = sketches.add(flat_plane)
+    sk3b.name = '03b_FlatTop'
+    c3b = sk3b.sketchCurves.sketchCircles.addByCenterRadius(adsk.core.Point3D.create(0, 0, 0), mm(14.5))
+    dim_diameter(sk3b, c3b, 'flat_top_od')
 
-    rev = comp.features.revolveFeatures
-    r_inp = rev.createInput(largest_profile(sk3), axis, adsk.fusion.FeatureOperations.JoinFeatureOperation)
-    r_inp.setAngleExtent(False, adsk.core.ValueInput.createByString('360 deg'))
-    rev.add(r_inp)
+    lofts = comp.features.loftFeatures
+    loft_inp = lofts.createInput(adsk.fusion.FeatureOperations.JoinFeatureOperation)
+    loft_inp.loftSections.add(largest_profile(sk3a))
+    loft_inp.loftSections.add(largest_profile(sk3b))
+    loft_inp.isSolid = True
+    lofts.add(loft_inp)
 
     # Pocket cut
     sk4 = sketches.add(xy)
@@ -280,20 +280,16 @@ def build_catch(design, root):
     s_inp = extrudes.createInput(col, adsk.fusion.FeatureOperations.CutFeatureOperation)
     s_inp.setDistanceExtent(
         False,
-        adsk.core.ValueInput.createByString('flange_thickness + plug_cyl_h + dome_bulge + 1 mm'),
+        adsk.core.ValueInput.createByString('flange_thickness + plug_h + 1 mm'),
     )
     extrudes.add(s_inp)
 
-    # Floor screws on dome base plane
-    pin = planes.createInput()
-    pin.setByOffset(xy, adsk.core.ValueInput.createByString('flange_thickness + plug_cyl_h'))
-    dome_plane = planes.add(pin)
-    dome_plane.name = 'DomeBase'
-    sk7 = sketches.add(dome_plane)
+    # Floor screws into the flat Ø30 mm top (cut from flat_plane downward into plug)
+    sk7 = sketches.add(flat_plane)
     sk7.name = '09_FloorScrews'
     for i in range(3):
         ang = math.radians(90 + 120 * i)
-        cx, cy = mm(12) * math.cos(ang), mm(12) * math.sin(ang)
+        cx, cy = mm(9) * math.cos(ang), mm(9) * math.sin(ang)
         fc = sk7.sketchCurves.sketchCircles.addByCenterRadius(
             adsk.core.Point3D.create(cx, cy, 0), mm(2.0)
         )
@@ -308,7 +304,8 @@ def build_catch(design, root):
     for i in range(sk7.profiles.count):
         col2.add(sk7.profiles.item(i))
     f_inp = extrudes.createInput(col2, adsk.fusion.FeatureOperations.CutFeatureOperation)
-    f_inp.setDistanceExtent(False, adsk.core.ValueInput.createByString('dome_bulge + 3 mm'))
+    # Negative = into the plug from the flat top
+    f_inp.setDistanceExtent(False, adsk.core.ValueInput.createByString('-10 mm'))
     extrudes.add(f_inp)
 
     return comp

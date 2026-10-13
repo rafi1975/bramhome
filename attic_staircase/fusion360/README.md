@@ -43,6 +43,7 @@ Unzip it. You should get a folder `AtticStaircaseParts` containing `.py` + `.man
 |-----------|--------:|---------|
 | `hole_d` | 50 mm | Hatch opening diameter |
 | `hole_depth` | 31 mm | Hatch opening depth |
+| `flat_top_d` | 30 mm | Flat floor at top of dome |
 | `flange_od` | 80 mm | Cover flange |
 | `pole_d` | 28 mm | Wooden pole diameter |
 | `sleeve_wall` | 6 mm | Hook sleeve wall thickness |
