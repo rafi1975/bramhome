@@ -11,7 +11,9 @@ thick walls, and a print orientation that puts layer lines *with* the pull.
 
 | File | Role |
 |------|------|
-| [`fusion360/AtticStaircaseParts/`](fusion360/AtticStaircaseParts/) | **Editable Fusion 360 model** (native parametric script) |
+| [`p1s/`](p1s/) | **Bambu Lab P1S print files** (oriented 3MF/STL) + PLA test guide |
+| [`p1s/bambu_p1s_pla_test.zip`](p1s/bambu_p1s_pla_test.zip) | Download-all ZIP for Bambu Studio |
+| [`fusion360/AtticStaircaseParts/`](fusion360/AtticStaircaseParts/) | Editable Fusion 360 model (native parametric script) |
 | [`catching_piece.stl`](catching_piece.stl) | Slice-ready mesh (M8 bolt version) |
 | [`catching_piece_printed_bar.stl`](catching_piece_printed_bar.stl) | Mesh fit-check only |
 | [`pole_hook.stl`](pole_hook.stl) | Slice-ready mesh |
@@ -89,26 +91,20 @@ in Fusion they are **not** parametric. Prefer the script above for editing.
 
 ## Print on Bambu Lab P1S
 
-### Material (important)
+→ Full PLA test guide: **[`p1s/PRINT_P1S.md`](p1s/PRINT_P1S.md)**
+
+**Quick start (PLA fit test):**
+1. Download [`p1s/bambu_p1s_pla_test.zip`](p1s/bambu_p1s_pla_test.zip)
+2. Import `attic_fit_test_plate_p1s.3mf` into Bambu Studio
+3. Printer: **P1S · 0.4 mm nozzle** · filament **PLA Basic**
+4. Slice & print
+
+**Nozzle for PLA test:** stock **0.4 mm** stainless hotend (no hardened head needed).
+
+### Final parts (not PLA)
 
 Use **PETG, ASA, PA-CF, or PETG-CF**. PLA will creep/break under loft-ladder
-spring tension.
-
-### Catching piece
-
-1. Import `catching_piece.stl`
-2. **Flange flat on the bed**, plug pointing up
-3. **No supports** needed
-4. ≥5 walls, 40–60% gyroid, 3+ top/bottom layers
-
-### Pole hook (orientation matters)
-
-1. Import `pole_hook.stl`
-2. Lay it on a **flat Y face** so the **pole axis is horizontal** and the
-   **hook opening faces up** — layer lines then run with the pull force
-3. **Enable supports** for the hook arch
-4. ≥6 walls, 50–80% gyroid, 4+ top/bottom layers
-5. Optional brim for PETG/ASA
+spring tension. Same oriented files in `p1s/`; raise walls/infill as in the guide.
 
 ## Regenerate STLs
 
