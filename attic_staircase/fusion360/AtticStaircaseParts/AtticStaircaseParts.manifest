@@ -1,0 +1,12 @@
+{
+	"autodeskProduct":	"Fusion360",
+	"type":	"script",
+	"author":	"bramhome",
+	"description":	{
+		"":	"Parametric attic staircase catching piece and pole hook — native Fusion features with User Parameters (not mesh / dumb STEP)."
+	},
+	"supportedOS":	"windows|mac",
+	"editEnabled":	true,
+	"iconfilename":	"",
+	"version":	"1.0.0"
+}
