@@ -57,9 +57,11 @@ in Fusion they are **not** parametric. Prefer the script above for editing.
 - **Ø80 mm flange** covers the torn laminate and lands screws in solid wood
 - Plug: **Ø44 mm** at the mouth (sits in the door), tapering to a **flat Ø29 mm**
   top that seats on the hatch’s flat Ø30 mm floor
-- **Pocket** 34 × 38 × 26 mm for the hook head
-- **M8 bolt** through the pocket is the real catch bar (steel) — the print only
-  holds the bolt and transfers load into the wood screws
+- **Solid outer walls** — no side openings (earlier nut-cutouts made thin struts
+  that broke)
+- **Pocket** 20 × 24 × 20 mm open only on the room face
+- **Integral Ø9 mm catch bar** keyed into the thick side walls (optional M8 mode
+  available in the `.scad` without piercing the outer shell)
 
 ### Hardware
 

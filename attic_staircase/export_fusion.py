@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Export BRep STEP solids for CAD exchange.
 
-Note: Fusion 360 cannot turn STEP into editable feature history. For a parametric
-Fusion model, run fusion360/AtticStaircaseParts instead (see fusion360/README.md).
+For a parametric Fusion model, run fusion360/AtticStaircaseParts
+(see fusion360/README.md).
 
 Usage:
     python3 export_fusion.py
@@ -18,25 +18,29 @@ import cadquery as cq
 OUT = Path(__file__).resolve().parent
 
 
-def catching_piece(*, use_printed_bar: bool = False) -> cq.Workplane:
+def catching_piece(*, use_m8_bar: bool = False) -> cq.Workplane:
     hole_depth = 31.0
     flat_top_d = 30.0
     plug_clearance = 0.5
-    plug_od = 44.0  # diameter that sits in the door
+    plug_od = 44.0
     flat_top_od = flat_top_d - 2 * plug_clearance
     flange_od = 80.0
     flange_thickness = 5.0
     plug_h = hole_depth - 0.5
-    cyl_fraction = 0.35
+    cyl_fraction = 0.40
     cyl_h = plug_h * cyl_fraction
     tap_h = plug_h - cyl_h
 
-    pocket_w = 34.0
-    pocket_h = 26.0
-    pocket_len = 38.0
+    # Smaller pocket → thick continuous outer walls (no side openings)
+    pocket_w = 20.0
+    pocket_h = 20.0
+    pocket_len = 24.0
     bar_z = 10.0
+    printed_bar_d = 9.0
     m8_clearance_d = 8.4
-    printed_bar_d = 10.0
+    m8_embed = 7.0
+    m8_nut_d = 15.0
+    m8_nut_h = 5.0
 
     screw_d = 4.5
     screw_head_d = 9.0
@@ -47,7 +51,7 @@ def catching_piece(*, use_printed_bar: bool = False) -> cq.Workplane:
     floor_screw_d = 4.2
     floor_screw_head_d = 8.0
     floor_screw_head_h = 2.5
-    floor_screw_r = 9.0
+    floor_screw_r = 8.0
     floor_screw_count = 3
     top_z = flange_thickness + plug_h
     roof_z = pocket_h
@@ -59,7 +63,6 @@ def catching_piece(*, use_printed_bar: bool = False) -> cq.Workplane:
         .extrude(cyl_h)
         .translate((0, 0, flange_thickness))
     )
-    # Truncated cone / frustum → flat Ø30 top
     frustum = (
         cq.Workplane("XY")
         .circle(plug_od / 2)
@@ -70,6 +73,15 @@ def catching_piece(*, use_printed_bar: bool = False) -> cq.Workplane:
     )
     body = body.union(cyl).union(frustum)
 
+    if not use_m8_bar:
+        bar = (
+            cq.Workplane("YZ")
+            .circle(printed_bar_d / 2)
+            .extrude(pocket_w + 12)
+            .translate((-(pocket_w + 12) / 2, 0, bar_z))
+        )
+        body = body.union(bar)
+
     pocket = (
         cq.Workplane("XY")
         .box(pocket_w, pocket_len, pocket_h + 0.02, centered=(True, True, False))
@@ -77,36 +89,29 @@ def catching_piece(*, use_printed_bar: bool = False) -> cq.Workplane:
     )
     body = body.cut(pocket)
 
-    if use_printed_bar:
-        bar = (
-            cq.Workplane("YZ")
-            .circle(printed_bar_d / 2)
-            .extrude(pocket_w + 4)
-            .translate((-(pocket_w / 2 + 2), 0, bar_z))
-        )
-        body = body.union(bar)
-    else:
+    if use_m8_bar:
         bore = (
             cq.Workplane("YZ")
             .circle(m8_clearance_d / 2)
-            .extrude(flange_od + 4)
-            .translate((-(flange_od + 4) / 2, 0, bar_z))
+            .extrude(pocket_w + 2 * m8_embed)
+            .translate((-(pocket_w + 2 * m8_embed) / 2, 0, bar_z))
         )
         body = body.cut(bore)
         for sx in (-1.0, 1.0):
-            hex_cut = (
+            nut = (
                 cq.Workplane("YZ")
-                .polygon(6, 15.2)
-                .extrude(8.5)
-                .translate((sx * (pocket_w / 2 + 4.0) - 4.25, 0, bar_z))
+                .polygon(6, m8_nut_d)
+                .extrude(m8_nut_h)
+                .translate(
+                    (sx * (pocket_w / 2 + m8_nut_h / 2 - 0.01) - m8_nut_h / 2, 0, bar_z)
+                )
             )
-            body = body.cut(hex_cut)
+            body = body.cut(nut)
 
     for i in range(screw_count):
         ang = math.radians(i * 360 / screw_count + 45)
         x = screw_circle_r * math.cos(ang)
         y = screw_circle_r * math.sin(ang)
-        # Through hole + counterbore on ROOM face (z = 0), not door side
         through = (
             cq.Workplane("XY")
             .circle(screw_d / 2)
@@ -125,7 +130,6 @@ def catching_piece(*, use_printed_bar: bool = False) -> cq.Workplane:
         ang = math.radians(i * 360 / floor_screw_count + 90)
         x = floor_screw_r * math.cos(ang)
         y = floor_screw_r * math.sin(ang)
-        # Through-hole opening on flat top; head seat on pocket side of roof
         through = (
             cq.Workplane("XY")
             .circle(floor_screw_d / 2)
@@ -187,8 +191,6 @@ def pole_hook() -> cq.Workplane:
     )
     body = sleeve.cut(bore)
 
-    # 2D hook profile on XZ, extruded in Y (mirrors clean_hook_2d)
-    # Build as solid unions of simple shapes — no leftover scraps
     crook = (
         cq.Workplane("XZ")
         .center(seat_x, seat_z)
@@ -228,7 +230,6 @@ def pole_hook() -> cq.Workplane:
     )
 
     hook = crook.union(neck).union(tip).union(crown).union(spine)
-
     throat_cut = (
         cq.Workplane("XZ")
         .center(seat_x, seat_z)
@@ -240,21 +241,16 @@ def pole_hook() -> cq.Workplane:
         .box(outer_r + 8, hook_width + 1, throat, centered=(True, True, True))
         .translate((seat_x + (outer_r + 8) / 2, 0, seat_z))
     )
-    # Trim anything that invaded the sleeve bore region (x < r_out)
     invade = (
         cq.Workplane("XY")
-        .box(sleeve_od, hook_width + 2, sleeve_length + crook_rise + outer_r + 20,
-             centered=(True, True, False))
-        .translate((-0.05, 0, -2))
-    )
-    # Only cut the portion with x < r_out - 0.05
-    invade = (
-        cq.Workplane("XY")
-        .box(r_out + sleeve_od, hook_width + 2, sleeve_length + crook_rise + outer_r + 20,
-             centered=(False, True, False))
+        .box(
+            r_out + sleeve_od,
+            hook_width + 2,
+            sleeve_length + crook_rise + outer_r + 20,
+            centered=(False, True, False),
+        )
         .translate((-sleeve_od, 0, -2))
     )
-
     hook = hook.cut(throat_cut).cut(mouth).cut(invade)
     body = body.union(hook).cut(bore)
 
@@ -286,15 +282,14 @@ def export_step(solid: cq.Workplane, path: Path) -> None:
 
 
 def main() -> None:
-    print("Building catching_piece …")
-    catch = catching_piece(use_printed_bar=False)
-    print("Building catching_piece_printed_bar …")
-    catch_bar = catching_piece(use_printed_bar=True)
+    print("Building catching_piece (solid walls + printed bar) …")
+    catch = catching_piece(use_m8_bar=False)
     print("Building pole_hook …")
     hook = pole_hook()
 
     export_step(catch, OUT / "catching_piece.step")
-    export_step(catch_bar, OUT / "catching_piece_printed_bar.step")
+    # Keep filename for compatibility; this is now the solid printed-bar catch
+    export_step(catch, OUT / "catching_piece_printed_bar.step")
     export_step(hook, OUT / "pole_hook.step")
 
     assembly = (
@@ -304,7 +299,7 @@ def main() -> None:
     )
     asm_path = OUT / "attic_staircase_assembly.step"
     assembly.save(str(asm_path))
-    print(f"wrote {asm_path.name} ({asm_path.stat().st_size // 1024} KB)")
+    print(f"wrote {asm_path.name}")
 
 
 if __name__ == "__main__":
