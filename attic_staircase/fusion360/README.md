@@ -41,7 +41,7 @@ Unzip it. You should get a folder `AtticStaircaseParts` containing `.py` + `.man
 
 | Parameter | Default | Meaning |
 |-----------|--------:|---------|
-| `hole_d` | 50 mm | Hatch opening diameter |
+| `plug_od` | 44 mm | Plug diameter that sits in the door |
 | `hole_depth` | 31 mm | Hatch opening depth |
 | `flat_top_d` | 30 mm | Flat floor at top of dome |
 | `flange_od` | 80 mm | Cover flange |

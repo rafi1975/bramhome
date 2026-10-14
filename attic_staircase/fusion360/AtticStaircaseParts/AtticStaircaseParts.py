@@ -37,11 +37,10 @@ def add_param(design, name, expression, comment=''):
 
 def create_parameters(design):
     # --- Catch ---
-    add_param(design, 'hole_d', '50 mm', 'Hatch opening diameter')
     add_param(design, 'hole_depth', '31 mm', 'Hatch opening depth')
     add_param(design, 'flat_top_d', '30 mm', 'Flat floor diameter at top of dome')
-    add_param(design, 'plug_clearance', '0.5 mm', 'Radial clearance')
-    add_param(design, 'plug_od', 'hole_d - 2 * plug_clearance', 'Plug OD at mouth')
+    add_param(design, 'plug_clearance', '0.5 mm', 'Radial clearance on flat top')
+    add_param(design, 'plug_od', '44 mm', 'Plug OD at mouth (sits in the door)')
     add_param(design, 'flat_top_od', 'flat_top_d - 2 * plug_clearance', 'Plug flat-top OD')
     add_param(design, 'flange_od', '80 mm', 'Flange OD')
     add_param(design, 'flange_thickness', '5 mm', 'Flange thickness')
@@ -168,7 +167,7 @@ def build_catch(design, root):
 
     sk2 = sketches.add(plug_plane)
     sk2.name = '02_PlugCyl'
-    c2 = sk2.sketchCurves.sketchCircles.addByCenterRadius(adsk.core.Point3D.create(0, 0, 0), mm(24.5))
+    c2 = sk2.sketchCurves.sketchCircles.addByCenterRadius(adsk.core.Point3D.create(0, 0, 0), mm(22.0))
     dim_diameter(sk2, c2, 'plug_od')
     extrude_one(comp, largest_profile(sk2), 'cyl_h',
                 adsk.fusion.FeatureOperations.JoinFeatureOperation)
@@ -181,7 +180,7 @@ def build_catch(design, root):
 
     sk3a = sketches.add(taper_plane)
     sk3a.name = '03a_TaperBase'
-    c3a = sk3a.sketchCurves.sketchCircles.addByCenterRadius(adsk.core.Point3D.create(0, 0, 0), mm(24.5))
+    c3a = sk3a.sketchCurves.sketchCircles.addByCenterRadius(adsk.core.Point3D.create(0, 0, 0), mm(22.0))
     dim_diameter(sk3a, c3a, 'plug_od')
 
     pin3 = planes.createInput()

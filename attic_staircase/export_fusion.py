@@ -19,11 +19,10 @@ OUT = Path(__file__).resolve().parent
 
 
 def catching_piece(*, use_printed_bar: bool = False) -> cq.Workplane:
-    hole_d = 50.0
     hole_depth = 31.0
     flat_top_d = 30.0
     plug_clearance = 0.5
-    plug_od = hole_d - 2 * plug_clearance
+    plug_od = 44.0  # diameter that sits in the door
     flat_top_od = flat_top_d - 2 * plug_clearance
     flange_od = 80.0
     flange_thickness = 5.0

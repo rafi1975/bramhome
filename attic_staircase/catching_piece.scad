@@ -10,13 +10,13 @@
 // Material: PETG / ASA / PA-CF (PLA only for fit test).
 
 // --- Hatch cavity (measured) ---
-hole_d            = 50.0;
 hole_depth        = 31.0;
-flat_top_d        = 30.0;
+flat_top_d        = 30.0;    // flat floor at top of dome
 
 // --- Plug / flange ---
-plug_clearance    = 0.5;
-plug_od           = hole_d - 2 * plug_clearance;       // 49.0
+// Mouth of the plug (next to the flange) — diameter that sits in the door
+plug_od           = 44.0;
+plug_clearance    = 0.5;     // used only for the flat-top OD
 flat_top_od       = flat_top_d - 2 * plug_clearance;   // 29.0
 flange_od         = 80.0;
 flange_thickness  = 5.0;
