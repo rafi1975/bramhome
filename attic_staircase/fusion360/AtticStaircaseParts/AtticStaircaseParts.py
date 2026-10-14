@@ -56,9 +56,13 @@ def create_parameters(design):
     add_param(design, 'm8_d', '8.4 mm', 'M8 clearance')
     add_param(design, 'nut_d', '15.2 mm', 'Nut clearance diameter')
     add_param(design, 'nut_h', '8.5 mm', 'Nut clearance depth')
-    add_param(design, 'screw_d', '4.5 mm', 'Flange screw hole')
+    add_param(design, 'screw_d', '4.5 mm', 'Flange screw shank hole')
+    add_param(design, 'screw_head_d', '9 mm', 'Flange screw counterbore (ROOM face)')
+    add_param(design, 'screw_head_h', '3 mm', 'Flange screw counterbore depth')
     add_param(design, 'screw_r', '33 mm', 'Flange screw pitch radius')
-    add_param(design, 'floor_screw_d', '4 mm', 'Floor screw hole')
+    add_param(design, 'floor_screw_d', '4.2 mm', 'Floor screw through-hole')
+    add_param(design, 'floor_screw_head_d', '8 mm', 'Floor screw head seat (pocket side)')
+    add_param(design, 'floor_screw_head_h', '2.5 mm', 'Floor screw head seat depth')
     add_param(design, 'floor_screw_r', '9 mm', 'Floor screw pitch radius (inside Ø30)')
 
     # --- Hook ---
@@ -258,40 +262,50 @@ def build_catch(design, root):
         n_inp.setDistanceExtent(False, adsk.core.ValueInput.createByString('-nut_h'))
         extrudes.add(n_inp)
 
-    # Flange screws
-    sk6 = sketches.add(xy)
-    sk6.name = '08_FlangeScrews'
+    # Flange screws — counterbore on ROOM face (xy / z=0), not door side
+    sk_heads = sketches.add(xy)
+    sk_heads.name = '08a_FlangeHeads'
+    sk_shank = sketches.add(xy)
+    sk_shank.name = '08b_FlangeShanks'
     for i in range(4):
         ang = math.radians(45 + 90 * i)
         cx, cy = mm(33) * math.cos(ang), mm(33) * math.sin(ang)
-        sc = sk6.sketchCurves.sketchCircles.addByCenterRadius(
+        hc = sk_heads.sketchCurves.sketchCircles.addByCenterRadius(
+            adsk.core.Point3D.create(cx, cy, 0), mm(4.5)
+        )
+        dim_diameter(sk_heads, hc, 'screw_head_d')
+        sc = sk_shank.sketchCurves.sketchCircles.addByCenterRadius(
             adsk.core.Point3D.create(cx, cy, 0), mm(2.25)
         )
-        dim_diameter(sk6, sc, 'screw_d')
-        rad = sk6.sketchCurves.sketchLines.addByTwoPoints(
+        dim_diameter(sk_shank, sc, 'screw_d')
+        rad = sk_shank.sketchCurves.sketchLines.addByTwoPoints(
             adsk.core.Point3D.create(0, 0, 0), sc.centerSketchPoint.geometry
         )
         rad.isConstruction = True
-        dim_distance(sk6, rad.startSketchPoint, sc.centerSketchPoint, 'screw_r')
+        dim_distance(sk_shank, rad.startSketchPoint, sc.centerSketchPoint, 'screw_r')
 
-    col = adsk.core.ObjectCollection.create()
-    for i in range(sk6.profiles.count):
-        col.add(sk6.profiles.item(i))
-    s_inp = extrudes.createInput(col, adsk.fusion.FeatureOperations.CutFeatureOperation)
-    s_inp.setDistanceExtent(
-        False,
-        adsk.core.ValueInput.createByString('flange_thickness + plug_h + 1 mm'),
-    )
+    head_col = adsk.core.ObjectCollection.create()
+    for i in range(sk_heads.profiles.count):
+        head_col.add(sk_heads.profiles.item(i))
+    h_inp = extrudes.createInput(head_col, adsk.fusion.FeatureOperations.CutFeatureOperation)
+    h_inp.setDistanceExtent(False, adsk.core.ValueInput.createByString('screw_head_h'))
+    extrudes.add(h_inp)
+
+    shank_col = adsk.core.ObjectCollection.create()
+    for i in range(sk_shank.profiles.count):
+        shank_col.add(sk_shank.profiles.item(i))
+    s_inp = extrudes.createInput(shank_col, adsk.fusion.FeatureOperations.CutFeatureOperation)
+    s_inp.setDistanceExtent(False, adsk.core.ValueInput.createByString('flange_thickness + 2 mm'))
     extrudes.add(s_inp)
 
-    # Floor screws into the flat Ø30 mm top (cut from flat_plane downward into plug)
+    # Floor screws: open on flat top; cut fully through the roof into the pocket
     sk7 = sketches.add(flat_plane)
     sk7.name = '09_FloorScrews'
     for i in range(3):
         ang = math.radians(90 + 120 * i)
         cx, cy = mm(9) * math.cos(ang), mm(9) * math.sin(ang)
         fc = sk7.sketchCurves.sketchCircles.addByCenterRadius(
-            adsk.core.Point3D.create(cx, cy, 0), mm(2.0)
+            adsk.core.Point3D.create(cx, cy, 0), mm(2.1)
         )
         dim_diameter(sk7, fc, 'floor_screw_d')
         rad = sk7.sketchCurves.sketchLines.addByTwoPoints(
@@ -304,9 +318,32 @@ def build_catch(design, root):
     for i in range(sk7.profiles.count):
         col2.add(sk7.profiles.item(i))
     f_inp = extrudes.createInput(col2, adsk.fusion.FeatureOperations.CutFeatureOperation)
-    # Negative = into the plug from the flat top
-    f_inp.setDistanceExtent(False, adsk.core.ValueInput.createByString('-10 mm'))
+    # Negative = from flat top down through roof into pocket
+    f_inp.setDistanceExtent(
+        False, adsk.core.ValueInput.createByString('-(flange_thickness + plug_h - pocket_h + 2 mm)')
+    )
     extrudes.add(f_inp)
+
+    # Head seats on pocket side of the roof (not on the flat top / door face)
+    pin_roof = planes.createInput()
+    pin_roof.setByOffset(xy, adsk.core.ValueInput.createByString('pocket_h'))
+    roof_plane = planes.add(pin_roof)
+    roof_plane.name = 'RoofUnderside'
+    sk8 = sketches.add(roof_plane)
+    sk8.name = '10_FloorHeads'
+    for i in range(3):
+        ang = math.radians(90 + 120 * i)
+        cx, cy = mm(9) * math.cos(ang), mm(9) * math.sin(ang)
+        hc = sk8.sketchCurves.sketchCircles.addByCenterRadius(
+            adsk.core.Point3D.create(cx, cy, 0), mm(4.0)
+        )
+        dim_diameter(sk8, hc, 'floor_screw_head_d')
+    col3 = adsk.core.ObjectCollection.create()
+    for i in range(sk8.profiles.count):
+        col3.add(sk8.profiles.item(i))
+    fh_inp = extrudes.createInput(col3, adsk.fusion.FeatureOperations.CutFeatureOperation)
+    fh_inp.setDistanceExtent(False, adsk.core.ValueInput.createByString('floor_screw_head_h'))
+    extrudes.add(fh_inp)
 
     return comp
 

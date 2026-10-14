@@ -45,9 +45,13 @@ def catching_piece(*, use_printed_bar: bool = False) -> cq.Workplane:
     screw_circle_r = 33.0
     screw_count = 4
 
-    floor_screw_d = 4.0
+    floor_screw_d = 4.2
+    floor_screw_head_d = 8.0
+    floor_screw_head_h = 2.5
     floor_screw_r = 9.0
     floor_screw_count = 3
+    top_z = flange_thickness + plug_h
+    roof_z = pocket_h
 
     body = cq.Workplane("XY").circle(flange_od / 2).extrude(flange_thickness)
     cyl = (
@@ -103,34 +107,45 @@ def catching_piece(*, use_printed_bar: bool = False) -> cq.Workplane:
         ang = math.radians(i * 360 / screw_count + 45)
         x = screw_circle_r * math.cos(ang)
         y = screw_circle_r * math.sin(ang)
+        # Through hole + counterbore on ROOM face (z = 0), not door side
         through = (
             cq.Workplane("XY")
             .circle(screw_d / 2)
-            .extrude(flange_thickness + plug_h + 1)
+            .extrude(flange_thickness + 2)
             .translate((x, y, -0.01))
         )
-        cs = (
+        counterbore = (
             cq.Workplane("XY")
-            .workplane(offset=flange_thickness - screw_head_h)
-            .center(x, y)
-            .circle(screw_d / 2)
-            .workplane(offset=screw_head_h + 0.05)
             .circle(screw_head_d / 2)
-            .loft()
+            .extrude(screw_head_h)
+            .translate((x, y, -0.01))
         )
-        body = body.cut(through).cut(cs)
+        body = body.cut(through).cut(counterbore)
 
     for i in range(floor_screw_count):
         ang = math.radians(i * 360 / floor_screw_count + 90)
         x = floor_screw_r * math.cos(ang)
         y = floor_screw_r * math.sin(ang)
-        floor = (
+        # Through-hole opening on flat top; head seat on pocket side of roof
+        through = (
             cq.Workplane("XY")
             .circle(floor_screw_d / 2)
-            .extrude(10)
-            .translate((x, y, flange_thickness + plug_h - 8))
+            .extrude(top_z - roof_z + 1.5)
+            .translate((x, y, roof_z - 0.5))
         )
-        body = body.cut(floor)
+        head = (
+            cq.Workplane("XY")
+            .circle(floor_screw_head_d / 2)
+            .extrude(floor_screw_head_h)
+            .translate((x, y, roof_z - 0.01))
+        )
+        mouth = (
+            cq.Workplane("XY")
+            .circle((floor_screw_d + 0.2) / 2)
+            .extrude(1.2)
+            .translate((x, y, top_z - 0.6))
+        )
+        body = body.cut(through).cut(head).cut(mouth)
 
     return body
 
