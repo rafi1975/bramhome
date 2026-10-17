@@ -146,10 +146,17 @@ In Fully, open Settings (hold left edge → swipe):
 
 Then **fix the layout inside Fully** (not in Chrome):
 
-1. In Frigate, open a **Camera group** (not only the default “all cameras” dashboard — groups are manually editable).
-2. Tap the **layout / edit** control (pencil or grid icon on the live view).
-3. Drag and resize the camera tiles to fill the Pad X8b screen; exit edit to save.
-4. That layout is stored only in Fully’s WebView. Chrome keeps its own copy.
+**Important:** the default **All Cameras** home view **cannot** be rearranged. Layout edit only exists on a **custom camera group**, and Frigate must not think you are on a phone (use Fully **View in Desktop Mode** first).
+
+1. On the Live page, tap the **+** (next to the home / group icons) to **create a camera group**, or tap an existing group icon (not the house / All Cameras).
+2. Include your cameras → save → **select that group** so it is active.
+3. Find **Edit layout** — icon looks like a **small dashboard / window panes** (`▣` style), **not** the pencil:
+   - **Desktop mode:** usually **bottom-right** of the live view (near fullscreen).
+   - **Tablet bar:** in the top control strip when a group is selected.
+4. Tap it → tiles get corner handles → drag to move, corners to resize → tap the **X** (same control) to exit and save.
+5. That layout is stored only in Fully’s WebView. Chrome keeps its own copy.
+
+The **pencil** next to the groups only **creates/edits which cameras are in the group** — it does not rearrange the grid.
 
 If the grid is still a mess from an old bad viewport:
 
