@@ -70,6 +70,26 @@ For a dedicated CCTV panel:
 
 Chrome’s Screen Wake Lock can work while the Frigate tab is foreground, but MagicOS OEM policies still dim many tablets. **[Fully Kiosk Browser](https://www.fully-kiosk.com/)** holds a real Android wake lock and can pin brightness.
 
+### How to open Fully’s settings (Honor gesture nav)
+
+On the Pad X8b, **swipe from the left edge is Android’s Back gesture**, so a quick swipe often leaves the page or closes Fully instead of opening Fully’s menu. Fully’s own docs: with gesture navigation you must **hold briefly on the left edge, then swipe right**.
+
+1. Put a finger on the **far left edge** of the screen (bezel / very edge, not mid-page).
+2. **Hold still ~0.5–1 second** (you should feel a slight pause; do not flick).
+3. Then **drag slowly toward the center**. Fully’s sidebar should appear.
+4. Tap **Settings**.
+
+If that still backs out of the app:
+
+| Try this | What it does |
+|----------|----------------|
+| **Three-button navigation** temporarily | **Android Settings → System & updates → System navigation → Buttons**. Open Fully, swipe left→right for the menu (no hold needed), change Fully settings, switch gestures back later if you want. |
+| **Kiosk Mode exit gesture** | If Kiosk Mode (PLUS) is on, left-swipe may only show a **PIN** dialog, not Settings. Enter your Kiosk PIN → then **Settings**, or choose **Disable Kiosk Mode** first. Default exit gesture is often left-swipe; you can change it to **Fast 5 taps** in Kiosk Mode settings once you get in. |
+| **Force-stop and relaunch** | **Android Settings → Apps → Fully Kiosk Browser → Force stop**, open Fully again. On first run, tap through until you see **Start Using Fully**, then use hold-then-swipe before enabling Kiosk Mode. |
+| **Remote Admin** (if already enabled) | From a PC on the same Wi‑Fi open `http://TABLET_IP:2323` (default), log in, change Start URL / Ignore SSL / brightness without touching the tablet. |
+
+Do **not** enable Kiosk Mode until Stay awake, Start URL, Ignore SSL Errors, and brightness are set — lockdown makes recovering from a white screen harder.
+
 ### Avoid the white-screen SSL error (common on this setup)
 
 Fully’s Android WebView often shows a **blank/white page** (sometimes with a brief SSL / `NET::ERR_CERT_*` toast) when the Start URL is **HTTPS with a self-signed, expired, or hostname-mismatched cert** — typical for a home reverse proxy in front of Frigate. Chrome may have let you tap “Advanced → Proceed”; Fully does not show that interstitial by default, so you only see white.
@@ -165,6 +185,8 @@ A factory reset or big MagicOS update can wipe these; re-run after updates.
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
+| Left-edge swipe **exits Fully** / goes Back instead of Settings | MagicOS gesture navigation steals the swipe | **Hold ~1s on left edge, then swipe**; or switch to **3-button nav** temporarily |
+| Left-edge swipe asks for a **PIN** | Kiosk Mode is on; that swipe is the exit gesture | Enter Kiosk PIN → Settings (or disable Kiosk Mode) |
 | Fully opens to **white screen** / SSL error | HTTPS self-signed or bad hostname; WebView blocks without interstitial | Use `http://IP:5000`, or **Ignore SSL Errors** + clear Fully cache |
 | White screen even on HTTP | WebView / GPU glitch | **Graphics Acceleration → Software**; auto-reload after page error |
 | Screen goes fully black after ~30 min, wakes on tap | Sleep / timeout still active; Stay awake not applied or not charging | Wall charger + Stay awake + Sleep longest/Never or ADB `screen_off_timeout` |
