@@ -140,9 +140,11 @@ In Fully, open Settings (hold left edge → swipe):
    - **Use Wide Viewport** → **on**
    - **Load in Overview Mode** → **off**
    - **Initial Scale** → leave default / empty first; if still sparse try **90** or **80**
-2. **Advanced Web Settings → User Agent** (wording: Fake / Custom User Agent) → set a **desktop Chrome** string, e.g.  
-   `Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36`
-3. Reload the Start URL (sidebar → reload / tap Start URL).
+2. **User Agent is not under Web Zoom and Scaling.** Go back one level → open **Advanced Web Settings**:
+   - **Fake User Agent String** → pick a **desktop** browser if listed (Chrome / Edge desktop), **or**
+   - **Custom User Agent String** (PLUS) → paste:  
+     `Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36`
+3. Leave **View in Desktop Mode** on, then reload the Start URL (sidebar → reload).
 
 Then **fix the layout inside Fully** (not in Chrome):
 
