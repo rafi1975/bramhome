@@ -146,17 +146,24 @@ In Fully, open Settings (hold left edge → swipe):
 
 Then **fix the layout inside Fully** (not in Chrome):
 
-**Important:** the default **All Cameras** home view **cannot** be rearranged. Layout edit only exists on a **custom camera group**, and Frigate must not think you are on a phone (use Fully **View in Desktop Mode** first).
+**Important:** the default **All Cameras** home view **cannot** be rearranged. Layout edit only exists on a **custom camera group**, and Frigate must not think you are on a phone.
 
-1. On the Live page, tap the **+** (next to the home / group icons) to **create a camera group**, or tap an existing group icon (not the house / All Cameras).
-2. Include your cameras → save → **select that group** so it is active.
-3. Find **Edit layout** — icon looks like a **small dashboard / window panes** (`▣` style), **not** the pencil:
-   - **Desktop mode:** usually **bottom-right** of the live view (near fullscreen).
-   - **Tablet bar:** in the top control strip when a group is selected.
-4. Tap it → tiles get corner handles → drag to move, corners to resize → tap the **X** (same control) to exit and save.
-5. That layout is stored only in Fully’s WebView. Chrome keeps its own copy.
+If you see a **bottom icon row** (camera / recordings / search / explore / gear), Frigate is in **mobile UI**. The blue camera and the gear at bottom-right are **navigation**, not Edit layout — that control will not appear until Desktop Mode sticks.
 
-The **pencil** next to the groups only **creates/edits which cameras are in the group** — it does not rearrange the grid.
+**Do this in order:**
+
+1. Fully → **Web Zoom and Scaling → View in Desktop Mode** → **on**  
+   Also set a **desktop Chrome User Agent** (Advanced Web Settings).  
+   Sidebar → **reload** Start URL (or clear Fully cache once, then reload).
+2. After reload you want a **desktop** chrome: groups/home along the **top**, **no** phone-style bottom tab bar. If the bottom tab bar is still there, Desktop Mode did not apply — fix UA/Desktop Mode again before continuing.
+3. Top of Live: tap **+** → create a **camera group** with your cameras → save.  
+   Tap that **group icon** (not the house).
+4. **Edit layout** appears only then — dashboard / window-panes icon:
+   - Desktop: **bottom-right of the camera area** (above any bars; near the fullscreen control).
+   - Not the pencil (that only edits group membership).
+5. Tap it → corner handles on tiles → drag/resize → tap **X** to save.
+
+**If Desktop Mode never sticks in Fully** (known WebView quirk): use **Chrome + Caffeine** on this tablet for Frigate instead, arrange the camera-group layout there, and keep Stay awake / brightness via Caffeine + MagicOS. Fully’s Ignore SSL / wake lock do not help if Frigate stays locked to mobile layout.
 
 If the grid is still a mess from an old bad viewport:
 
