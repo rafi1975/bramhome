@@ -124,10 +124,39 @@ Fully’s Android WebView often shows a **blank/white page** (sometimes with a b
    - **Screen Brightness** → fixed value (try **180–220**; empty = system default and dims again)  
    - **Screen Off Timer** → off / 0 if present  
    - **Screensaver** → off (or timer **0**) so Fully does not dim on idle
-4. **Settings → Web Content Settings**: enable desktop mode if the Frigate live grid looks cramped.
+4. **Settings → Web Zoom and Scaling** (fixes big gaps vs Chrome — see below).
 5. **Settings → Kiosk Mode** (optional): pin Fully so back/home cannot leave the cameras.
 6. **Settings → Other Settings → Autostart after reboot** → on (and grant MagicOS auto-launch as above).
 7. Reboot once while plugged in; confirm the live view loads (not white) and brightness stays put for well over 30 minutes.
+
+### Camera grid has big gaps (looks fine in Chrome)
+
+Fully uses **Android WebView**, not Chrome. Frigate saves the live-grid layout in **that browser’s local storage**, so Chrome’s tidy layout does not carry over. WebView also often reports a **mobile** viewport, which changes how the default camera dashboard packs tiles and leaves empty black columns.
+
+In Fully, open Settings (hold left edge → swipe):
+
+1. **Web Zoom and Scaling**
+   - **View in Desktop Mode** → **on**
+   - **Use Wide Viewport** → **on**
+   - **Load in Overview Mode** → **off**
+   - **Initial Scale** → leave default / empty first; if still sparse try **90** or **80**
+2. **Advanced Web Settings → User Agent** (wording: Fake / Custom User Agent) → set a **desktop Chrome** string, e.g.  
+   `Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36`
+3. Reload the Start URL (sidebar → reload / tap Start URL).
+
+Then **fix the layout inside Fully** (not in Chrome):
+
+1. In Frigate, open a **Camera group** (not only the default “all cameras” dashboard — groups are manually editable).
+2. Tap the **layout / edit** control (pencil or grid icon on the live view).
+3. Drag and resize the camera tiles to fill the Pad X8b screen; exit edit to save.
+4. That layout is stored only in Fully’s WebView. Chrome keeps its own copy.
+
+If the grid is still a mess from an old bad viewport:
+
+- Fully → **Other Settings** → clear **cache / web storage** for the site (or Android **Apps → Fully → Storage → Clear cache**), reload, enable Desktop Mode again, then re-edit the camera group once.
+
+Optional cleaner Start URL for a wall panel:  
+`http://192.168.x.x:5000` → open your camera group once and bookmark that path as Start URL so you land on the fixed grid.
 
 Home Assistant users can also use the [Fully Kiosk integration](https://www.home-assistant.io/integrations/fully_kiosk/) later to set brightness or wake remotely. For that integration’s own TLS to Fully’s remote admin, turn **Verify SSL certificate** off if Fully’s remote admin uses a self-signed cert — that is separate from the Start URL SSL issue.
 
@@ -189,6 +218,7 @@ A factory reset or big MagicOS update can wipe these; re-run after updates.
 | Left-edge swipe asks for a **PIN** | Kiosk Mode is on; that swipe is the exit gesture | Enter Kiosk PIN → Settings (or disable Kiosk Mode) |
 | Fully opens to **white screen** / SSL error | HTTPS self-signed or bad hostname; WebView blocks without interstitial | Use `http://IP:5000`, or **Ignore SSL Errors** + clear Fully cache |
 | White screen even on HTTP | WebView / GPU glitch | **Graphics Acceleration → Software**; auto-reload after page error |
+| Camera grid has **big black gaps**; Chrome looks fine | Fully WebView = mobile viewport + separate Frigate layout storage | **View in Desktop Mode** + desktop User Agent; edit camera-group layout *inside Fully* |
 | Screen goes fully black after ~30 min, wakes on tap | Sleep / timeout still active; Stay awake not applied or not charging | Wall charger + Stay awake + Sleep longest/Never or ADB `screen_off_timeout` |
 | Screen stays on but much darker | Adaptive brightness, Power saving, Eye Comfort, or no fixed brightness | Manual brightness + Fully **Screen Brightness** + disable Power saving |
 | Fine in Fully, dims in Chrome | Wake lock released / OEM ignores browser | Fully Kiosk, or Chrome + Caffeine |
