@@ -56,12 +56,49 @@ For a dedicated CCTV panel:
 
 ---
 
-## Recommended: Fully Kiosk Browser + Frigate
+## Viewing options (pick one)
+
+| Option | Use when | Stay-awake strength |
+|--------|----------|---------------------|
+| **A. Fully Kiosk + plain HTTP Frigate** | LAN-only tablet; avoid SSL white screens | Best (wake lock + fixed brightness) |
+| **B. Fully Kiosk + HTTPS** | You need TLS; fix SSL settings first | Best once SSL stops failing |
+| **C. Chrome + Caffeine** | Fully previously white-screened on SSL and you want a simple bypass | Good enough with MagicOS checklist |
+
+---
+
+## A / B — Fully Kiosk Browser + Frigate
 
 Chrome’s Screen Wake Lock can work while the Frigate tab is foreground, but MagicOS OEM policies still dim many tablets. **[Fully Kiosk Browser](https://www.fully-kiosk.com/)** holds a real Android wake lock and can pin brightness.
 
+### Avoid the white-screen SSL error (common on this setup)
+
+Fully’s Android WebView often shows a **blank/white page** (sometimes with a brief SSL / `NET::ERR_CERT_*` toast) when the Start URL is **HTTPS with a self-signed, expired, or hostname-mismatched cert** — typical for a home reverse proxy in front of Frigate. Chrome may have let you tap “Advanced → Proceed”; Fully does not show that interstitial by default, so you only see white.
+
+**Preferred on a wall tablet that never leaves the LAN:** point Fully at Frigate’s **HTTP** UI and skip TLS on that path.
+
+1. Start URL examples that avoid SSL entirely:
+   - `http://192.168.x.x:5000` (Frigate default UI port)
+   - `http://frigate.local:5000` if mDNS resolves on the tablet
+2. Do **not** use `https://…` unless the cert is publicly trusted (Let’s Encrypt / real CA) **or** you enable Ignore SSL Errors below.
+3. If Frigate is only exposed via an HTTPS proxy (Nginx Proxy Manager, Traefik, Caddy, HA ingress):
+   - either add a second **HTTP** listener for the tablet’s IP only, or
+   - use Fully’s Ignore SSL Errors (LAN trust trade-off).
+
+**If you must use HTTPS in Fully:**
+
+1. Swipe from the left edge → **Settings → Advanced Web Settings**
+2. Enable **Ignore SSL Errors** (lets WebView load self-signed / bad-hostname certs; only safe on a trusted home LAN)
+3. Still white? Also try **Graphics Acceleration Mode → Software** (known Fully white-screen workaround on older/odd GPUs)
+4. Clear a stuck bad SSL decision:
+   - Exit Fully (sidebar → Exit)
+   - **Android Settings → Apps → Fully Kiosk Browser → Storage → Clear cache** (Clear data only if you accept re-entering settings)
+   - Reopen Fully, confirm Ignore SSL Errors is still on, load the Start URL again
+5. Optional: **Web Auto Reload → Auto Reload after Page Error** so a transient cert/proxy blip recovers without a white forever-page
+
+### Fully stay-awake settings
+
 1. Install Fully Kiosk Browser from Google Play (Plus unlock optional; **Keep Screen On** is in the free tier).
-2. Set **Start URL** to your Frigate UI, e.g. `http://frigate.local:5000` or your HTTPS reverse-proxy URL.
+2. Set **Start URL** as in the SSL section above (`http://…:5000` preferred).
 3. **Settings → Device Management**:
    - **Keep Screen On** → on  
    - **Screen Brightness** → fixed value (try **180–220**; empty = system default and dims again)  
@@ -70,17 +107,24 @@ Chrome’s Screen Wake Lock can work while the Frigate tab is foreground, but Ma
 4. **Settings → Web Content Settings**: enable desktop mode if the Frigate live grid looks cramped.
 5. **Settings → Kiosk Mode** (optional): pin Fully so back/home cannot leave the cameras.
 6. **Settings → Other Settings → Autostart after reboot** → on (and grant MagicOS auto-launch as above).
-7. Reboot once while plugged in; confirm brightness stays put for well over 30 minutes.
+7. Reboot once while plugged in; confirm the live view loads (not white) and brightness stays put for well over 30 minutes.
 
-Home Assistant users can also use the [Fully Kiosk integration](https://www.home-assistant.io/integrations/fully_kiosk/) later to set brightness or wake remotely.
+Home Assistant users can also use the [Fully Kiosk integration](https://www.home-assistant.io/integrations/fully_kiosk/) later to set brightness or wake remotely. For that integration’s own TLS to Fully’s remote admin, turn **Verify SSL certificate** off if Fully’s remote admin uses a self-signed cert — that is separate from the Start URL SSL issue.
 
-### Frigate in a normal browser
+---
 
-If you stay on Chrome / Firefox:
+## C — Chrome + Caffeine (skip Fully SSL)
 
-- Open Frigate over **HTTPS** if possible (Wake Lock needs a secure context; `localhost` and some LAN setups vary).
-- Keep the Frigate tab **foreground and unmuted focus** — background tabs release the wake lock.
-- Recent Frigate UIs use a screen wake lock while the page is active; that still loses to MagicOS if Sleep / Power saving fight it. Prefer Fully Kiosk on this tablet.
+If Fully already burned you with a white SSL page and you do not want Ignore SSL Errors:
+
+1. Install **Caffeine** (or similar keep-awake) → set timeout to **infinite / forever**; exempt it from MagicOS battery kill (same as the Battery checklist).
+2. Open Frigate in **Chrome**:
+   - Prefer `http://192.168.x.x:5000` on LAN (no cert fight).
+   - If you use HTTPS, tap through the cert warning once in Chrome (Chrome keeps that exception; Fully did not).
+3. Keep the Frigate tab **foreground**. Background tabs drop wake locks; Caffeine covers the OS sleep side.
+4. Still apply the MagicOS Display + Battery checklist so adaptive brightness / Power saving do not dim the panel under Chrome.
+
+Recent Frigate UIs also request a Screen Wake Lock while the page is active; on Honor tablets that alone is often not enough — keep Caffeine (or Fully) in the loop.
 
 ---
 
@@ -117,21 +161,17 @@ A factory reset or big MagicOS update can wipe these; re-run after updates.
 
 ---
 
-## Lightweight alternative: Caffeine
-
-If you do not want Fully Kiosk, a keep-awake app such as **Caffeine** (timeout → infinite / forever) can hold the screen on while Frigate runs in Chrome. Exempt it from MagicOS battery killing the same way. It is a weaker kiosk story (no brightness pin, no autostart kiosk) but enough for a desk tablet.
-
----
-
 ## Quick diagnosis
 
-| Symptom after ~30 min | Likely cause | Fix |
-|-----------------------|--------------|-----|
-| Screen goes fully black, wakes on tap | Sleep / timeout still active; Stay awake not applied or not charging | Wall charger + Stay awake + Sleep longest/Never or ADB `screen_off_timeout` |
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Fully opens to **white screen** / SSL error | HTTPS self-signed or bad hostname; WebView blocks without interstitial | Use `http://IP:5000`, or **Ignore SSL Errors** + clear Fully cache |
+| White screen even on HTTP | WebView / GPU glitch | **Graphics Acceleration → Software**; auto-reload after page error |
+| Screen goes fully black after ~30 min, wakes on tap | Sleep / timeout still active; Stay awake not applied or not charging | Wall charger + Stay awake + Sleep longest/Never or ADB `screen_off_timeout` |
 | Screen stays on but much darker | Adaptive brightness, Power saving, Eye Comfort, or no fixed brightness | Manual brightness + Fully **Screen Brightness** + disable Power saving |
-| Fine in Fully, dims in Chrome | Wake lock released / OEM ignores browser | Use Fully Kiosk for the wall panel |
+| Fine in Fully, dims in Chrome | Wake lock released / OEM ignores browser | Fully Kiosk, or Chrome + Caffeine |
 | Dim only at night | Circadian / Eye Comfort schedule | Turn those off |
-| Dim after reboot | App not auto-started; Stay awake only while charging | Fully autostart + keep plugged in |
+| Dim after reboot | App not auto-started; Stay awake only while charging | Fully/Caffeine autostart + keep plugged in |
 
 ---
 
@@ -147,5 +187,6 @@ If you do not want Fully Kiosk, a keep-awake app such as **Caffeine** (timeout �
 
 - Honor: [Set the screen timeout (Sleep)](https://www.honor.com/uk/support/content/en-us15840786/), [screen too dark / adaptive & power saving](https://consumer.huawei.com/en/support/content/en-us00410352/) (Huawei/Honor shared stack)
 - Android kiosk timeout via ADB: `screen_off_timeout` max `2147483647` ms ([emteria notes](https://emteria.com/blog/android-screen-timeout))
-- [Fully Kiosk — Keep Screen On / brightness](https://www.fully-kiosk.com/en/)
-- [Frigate wake-lock discussion](https://github.com/blakeblackshear/frigate/discussions/4237) (newer UI includes wake lock; OEM tablets still need Fully)
+- [Fully Kiosk — Keep Screen On / Ignore SSL Errors / brightness](https://www.fully-kiosk.com/en/)
+- Fully white screen: [HA community — Graphics Acceleration → Software](https://community.home-assistant.io/t/the-nightmare-of-fully-kiosk-browser-white-screen/592959)
+- [Frigate wake-lock discussion](https://github.com/blakeblackshear/frigate/discussions/4237) (newer UI includes wake lock; OEM tablets still need Fully or Caffeine)
