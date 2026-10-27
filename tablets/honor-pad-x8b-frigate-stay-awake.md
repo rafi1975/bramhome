@@ -176,6 +176,35 @@ Optional cleaner Start URL for a wall panel:
 
 Home Assistant users can also use the [Fully Kiosk integration](https://www.home-assistant.io/integrations/fully_kiosk/) later to set brightness or wake remotely. For that integration’s own TLS to Fully’s remote admin, turn **Verify SSL certificate** off if Fully’s remote admin uses a self-signed cert — that is separate from the Start URL SSL issue.
 
+### Fully crashes — restart it automatically
+
+Frigate’s live WebView often leaks memory and kills Fully after hours. Fully can try to bring itself back; MagicOS must be allowed to auto-launch it.
+
+**In Fully** (hold left edge → Settings):
+
+1. **Other Settings**
+   - **Restart Fully After Crash** → **on** (**PLUS** license)
+   - **Restart Fully After Update** → **on** (PLUS; needs Kiosk Mode)
+   - **Run as Priority App** → **on** (always on Android 8+, still leave it enabled)
+2. **Device Management**
+   - **Keep Screen On** → on (restart works more reliably with this)
+   - **Launch on Boot** → on (survives power cuts / tablet reboots)
+3. Optional but helpful for Frigate memory pressure:
+   - **Web Auto Reload → Auto Reload on Idle** → e.g. every **3600** seconds (hourly soft refresh; less crash-prone than a dead WebView)
+4. **Kiosk Mode** (PLUS): enabling it (with a PIN + exit gesture you remember) makes crash restart and boot launch more reliable — Fully becomes the home app.
+
+**On Honor MagicOS** (required or Fully may stay dead after a kill):
+
+1. **Settings → Apps → Fully Kiosk Browser → Battery** (or **Battery usage details**)
+2. **App launch** / **App launch settings** → turn **Manage automatically** **off**
+3. Enable all three: **Auto-launch**, **Secondary launch**, **Run in background**
+4. Also: **Battery optimization** / **Don’t allow** for Fully if you see that toggle
+5. In Recents, lock Fully’s card if MagicOS offers a lock icon (stops swipe-away kills)
+
+Official Fully note: restart is **best-effort** — a non-system app cannot always override Android. If **Restart Fully After Crash** is greyed out, you need a **PLUS** license (or the Play “GO” build may omit it).
+
+**Fallback without PLUS:** enable Fully **Remote Admin**, then from Home Assistant use the [Fully Kiosk integration](https://www.home-assistant.io/integrations/fully_kiosk/) **Restart** action on a schedule, or call `http://TABLET_IP:2323/?cmd=restartApp&password=…` from an automation when the tablet stops responding.
+
 ---
 
 ## C — Chrome + Caffeine (skip Fully SSL)
@@ -235,6 +264,7 @@ A factory reset or big MagicOS update can wipe these; re-run after updates.
 | Fully opens to **white screen** / SSL error | HTTPS self-signed or bad hostname; WebView blocks without interstitial | Use `http://IP:5000`, or **Ignore SSL Errors** + clear Fully cache |
 | White screen even on HTTP | WebView / GPU glitch | **Graphics Acceleration → Software**; auto-reload after page error |
 | Camera grid has **big black gaps**; Chrome looks fine | Fully WebView = mobile viewport + separate Frigate layout storage | **View in Desktop Mode** + desktop User Agent; edit camera-group layout *inside Fully* |
+| Fully **crashes** and stays closed | WebView/Frigate memory; no crash restart; MagicOS blocks relaunch | **Other Settings → Restart Fully After Crash** (PLUS) + MagicOS App launch manual; hourly auto-reload |
 | Screen goes fully black after ~30 min, wakes on tap | Sleep / timeout still active; Stay awake not applied or not charging | Wall charger + Stay awake + Sleep longest/Never or ADB `screen_off_timeout` |
 | Screen stays on but much darker | Adaptive brightness, Power saving, Eye Comfort, or no fixed brightness | Manual brightness + Fully **Screen Brightness** + disable Power saving |
 | Fine in Fully, dims in Chrome | Wake lock released / OEM ignores browser | Fully Kiosk, or Chrome + Caffeine |
@@ -256,5 +286,6 @@ A factory reset or big MagicOS update can wipe these; re-run after updates.
 - Honor: [Set the screen timeout (Sleep)](https://www.honor.com/uk/support/content/en-us15840786/), [screen too dark / adaptive & power saving](https://consumer.huawei.com/en/support/content/en-us00410352/) (Huawei/Honor shared stack)
 - Android kiosk timeout via ADB: `screen_off_timeout` max `2147483647` ms ([emteria notes](https://emteria.com/blog/android-screen-timeout))
 - [Fully Kiosk — Keep Screen On / Ignore SSL Errors / brightness](https://www.fully-kiosk.com/en/)
+- Fully crashes: [Restart Fully After Crash FAQ](https://www.fully-kiosk.com/docs/en/faq/crash) · [Other Settings](https://www.fully-kiosk.com/docs/en/configuration/other)
 - Fully white screen: [HA community — Graphics Acceleration → Software](https://community.home-assistant.io/t/the-nightmare-of-fully-kiosk-browser-white-screen/592959)
 - [Frigate wake-lock discussion](https://github.com/blakeblackshear/frigate/discussions/4237) (newer UI includes wake lock; OEM tablets still need Fully or Caffeine)
